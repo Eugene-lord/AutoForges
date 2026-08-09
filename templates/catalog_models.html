@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Модели {{ brand.name }}{% endblock %}
+{% block content %}
+<h2 class="mb-2 text-light">{{ brand.name }} <small class="text-muted">{{ brand.country }}</small></h2>
+<p class="text-muted">{{ brand.description }}</p>
+<hr class="border-secondary">
+<div class="row">
+    {% for model in models %}
+    <div class="col-md-6 mb-4">
+        <a href="{{ url_for('catalog.model_detail', model_id=model.id) }}" class="text-decoration-none">
+            <div class="glass-card p-3">
+                <h5>{{ model.name }} ({{ model.generation }})</h5>
+                <span class="badge bg-secondary">{{ model.body_type }}</span>
+                <small class="text-muted d-block">{{ model.year_start }}–{{ model.year_end }}</small>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+<a href="/catalog" class="btn btn-outline-light mt-3">← К списку марок</a>
+{% endblock %}

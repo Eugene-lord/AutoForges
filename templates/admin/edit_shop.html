@@ -1,0 +1,20 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_content %}
+<h2 class="text-light mb-3">{% if item %}Редактировать{% else %}Добавить{% endif %} магазин</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label class="form-label text-light">Название</label>
+        <input type="text" name="name" class="form-control bg-dark text-light" value="{{ item.name if item else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">URL логотипа</label>
+        <input type="text" name="logo_url" class="form-control bg-dark text-light" value="{{ item.logo_url if item else '' }}">
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Партнёрский код</label>
+        <input type="text" name="affiliate_code" class="form-control bg-dark text-light" value="{{ item.affiliate_code if item else '' }}">
+    </div>
+    <button type="submit" class="btn btn-glow">Сохранить</button>
+    <a href="{{ url_for('admin.list_shops') }}" class="btn btn-outline-light">Отмена</a>
+</form>
+{% endblock %}

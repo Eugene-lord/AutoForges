@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% block title %}Мой проект — Конструктор{% endblock %}
+{% block content %}
+<h2 class="mb-4 text-light">🚗 Ваш проект</h2>
+
+<!-- Прогресс-бар -->
+<div class="glass-card p-3 mb-4">
+    <div class="d-flex flex-wrap justify-content-between">
+        {% set steps = ['vehicle', 'engine', 'transmission', 'differential', 'suspension', 'brakes', 'cooling', 'electronics', 'ecu', 'turbo', 'intercooler', 'exhaust'] %}
+        {% for step in steps %}
+            {% set is_done = (step == 'vehicle') or (selections.get(step) is not none) %}
+            <div class="text-center mb-2" style="min-width: 55px;">
+                <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center
+                            {% if is_done %}bg-success{% else %}bg-secondary{% endif %}"
+                     style="width: 28px; height: 28px; font-size: 0.7rem;">
+                    {% if is_done %}✓{% else %}{{ loop.index }}{% endif %}
+                </div>
+                <small class="text-muted">{{ step }}</small>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="row">
+    <!-- Автомобиль -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Автомобиль</h5>
+            <p class="lead">{{ vehicle.name }}</p>
+            <small class="text-muted">{{ vehicle.year }}</small><br>
+            <a href="{{ url_for('builder.select_vehicle') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+        </div>
+    </div>
+
+    <!-- Двигатель -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Двигатель</h5>
+            {% if selections.engine %}
+                <p class="lead">{{ selections.engine.name }}</p>
+                <small class="text-light">{{ selections.engine.displacement }} л / {{ selections.engine.power_hp }} л.с.</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='engine') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбран</p>
+                <a href="{{ url_for('builder.select_component', component_type='engine') }}" class="btn btn-glow btn-sm">Выбрать</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- КПП -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">КПП</h5>
+            {% if selections.transmission %}
+                <p class="lead">{{ selections.transmission.name }}</p>
+                <small class="text-light">{{ selections.transmission.type }} / {{ selections.transmission.gears }} передач</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='transmission') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбрана</p>
+                <a href="{{ url_for('builder.select_component', component_type='transmission') }}" class="btn btn-glow btn-sm">Выбрать КПП</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Редуктор -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Редуктор</h5>
+            {% if selections.differential %}
+                <p class="lead">{{ selections.differential.name }}</p>
+                <small class="text-light">Тип: {{ selections.differential.type }}, передаточное: {{ selections.differential.ratio }}</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='differential') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбран</p>
+                <a href="{{ url_for('builder.select_component', component_type='differential') }}" class="btn btn-glow btn-sm">Выбрать редуктор</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Подвеска -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Подвеска</h5>
+            {% if selections.suspension %}
+                <p class="lead">{{ selections.suspension.name }}</p>
+                <small class="text-light">Тип: {{ selections.suspension.type }}</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='suspension') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбрана</p>
+                <a href="{{ url_for('builder.select_component', component_type='suspension') }}" class="btn btn-glow btn-sm">Выбрать подвеску</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Тормоза -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Тормоза</h5>
+            {% if selections.brakes %}
+                <p class="lead">{{ selections.brakes.name }}</p>
+                <small class="text-light">{{ selections.brakes.type }}, {{ selections.brakes.size }}</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='brakes') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбраны</p>
+                <a href="{{ url_for('builder.select_component', component_type='brakes') }}" class="btn btn-glow btn-sm">Выбрать тормоза</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Охлаждение -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Охлаждение</h5>
+            {% if selections.cooling %}
+                <p class="lead">{{ selections.cooling.name }}</p>
+                <small class="text-light">Тип: {{ selections.cooling.type }}</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='cooling') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбрано</p>
+                <a href="{{ url_for('builder.select_component', component_type='cooling') }}" class="btn btn-glow btn-sm">Выбрать охлаждение</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Электроника -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Электроника</h5>
+            {% if selections.electronics %}
+                <p class="lead">{{ selections.electronics.name }}</p>
+                <small class="text-light">{{ selections.electronics.description }}</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='electronics') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбрана</p>
+                <a href="{{ url_for('builder.select_component', component_type='electronics') }}" class="btn btn-glow btn-sm">Выбрать электронику</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ЭБУ -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">ЭБУ</h5>
+            {% if selections.ecu %}
+                <p class="lead">{{ selections.ecu.name }}</p>
+                <small class="text-light">Тип: {{ selections.ecu.type }}</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='ecu') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбран</p>
+                <a href="{{ url_for('builder.select_component', component_type='ecu') }}" class="btn btn-glow btn-sm">Выбрать ЭБУ</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Турбина -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Турбина</h5>
+            {% if selections.turbo %}
+                <p class="lead">{{ selections.turbo.name }}</p>
+                <small class="text-light">Давление: {{ selections.turbo.pressure }}</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='turbo') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбрана</p>
+                <a href="{{ url_for('builder.select_component', component_type='turbo') }}" class="btn btn-glow btn-sm">Выбрать турбину</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Интеркулер -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Интеркулер</h5>
+            {% if selections.intercooler %}
+                <p class="lead">{{ selections.intercooler.name }}</p>
+                <small class="text-light">Тип: {{ selections.intercooler.type }}</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='intercooler') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбран</p>
+                <a href="{{ url_for('builder.select_component', component_type='intercooler') }}" class="btn btn-glow btn-sm">Выбрать интеркулер</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Выхлоп -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Выхлоп</h5>
+            {% if selections.exhaust %}
+                <p class="lead">{{ selections.exhaust.name }}</p>
+                <small class="text-light">Материал: {{ selections.exhaust.material }}</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='exhaust') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбран</p>
+                <a href="{{ url_for('builder.select_component', component_type='exhaust') }}" class="btn btn-glow btn-sm">Выбрать выхлоп</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Электромотор -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Электромотор</h5>
+            {% if selections.electric_motor %}
+                <p class="lead">{{ selections.electric_motor.name }}</p>
+                <small class="text-light">{{ selections.electric_motor.power_hp }} л.с., {{ selections.electric_motor.torque_nm }} Нм, {{ selections.electric_motor.motor_type }}</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='electric_motor') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбран</p>
+                <a href="{{ url_for('builder.select_component', component_type='electric_motor') }}" class="btn btn-glow btn-sm">Выбрать</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Батарея -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Батарея</h5>
+            {% if selections.battery %}
+                <p class="lead">{{ selections.battery.name }}</p>
+                <small class="text-light">{{ selections.battery.capacity_kwh }} кВт⋅ч, {{ selections.battery.voltage }} В, {{ selections.battery.battery_type }}</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='battery') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбрана</p>
+                <a href="{{ url_for('builder.select_component', component_type='battery') }}" class="btn btn-glow btn-sm">Выбрать</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Инвертор -->
+    <div class="col-md-6 mb-4">
+        <div class="glass-card p-3 h-100">
+            <h5 class="text-warning">Инвертор</h5>
+            {% if selections.inverter %}
+                <p class="lead">{{ selections.inverter.name }}</p>
+                <small class="text-light">{{ selections.inverter.power_kw }} кВт, {{ selections.inverter.inverter_type }}</small><br>
+                <a href="{{ url_for('builder.select_component', component_type='inverter') }}" class="btn btn-outline-light btn-sm mt-2">Изменить</a>
+            {% else %}
+                <p class="text-muted">Не выбран</p>
+                <a href="{{ url_for('builder.select_component', component_type='inverter') }}" class="btn btn-glow btn-sm">Выбрать</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 2D-схема -->
+<div class="glass-card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="text-warning">Схема автомобиля</h5>
+        <small class="text-muted">Наведите и кликните на узел</small>
+    </div>
+    <div class="row">
+        <div class="col-md-8 position-relative">
+            <svg id="car-svg" viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;" data-vehicle-id="{{ vehicle.id }}">
+                <path d="M120,200 L120,140 Q120,110 150,110 L350,110 L420,70 Q450,60 480,70 L530,110 L680,110 Q700,110 700,130 L700,200 Z" fill="#2a3a4a" stroke="#4a5a6a" stroke-width="2"/>
+                <circle cx="220" cy="230" r="40" fill="#1a1a1a" stroke="#4a5a6a" stroke-width="2"/>
+                <circle cx="580" cy="230" r="40" fill="#1a1a1a" stroke="#4a5a6a" stroke-width="2"/>
+                <circle cx="220" cy="230" r="20" fill="#333" />
+                <circle cx="580" cy="230" r="20" fill="#333" />
+                <!-- Зоны -->
+                <rect class="car-zone" data-component="engine" x="430" y="120" width="100" height="60" rx="5" />
+                <rect class="car-zone" data-component="transmission" x="530" y="150" width="60" height="40" rx="3" />
+                <rect class="car-zone" data-component="differential" x="640" y="160" width="40" height="30" rx="3" />
+                <circle class="car-zone" data-component="suspension" cx="220" cy="190" r="25" />
+                <circle class="car-zone" data-component="suspension" cx="220" cy="270" r="25" />
+                <circle class="car-zone" data-component="suspension" cx="580" cy="190" r="25" />
+                <circle class="car-zone" data-component="suspension" cx="580" cy="270" r="25" />
+                <circle class="car-zone" data-component="brakes" cx="220" cy="230" r="30" />
+                <circle class="car-zone" data-component="brakes" cx="580" cy="230" r="30" />
+                <rect class="car-zone" data-component="cooling" x="390" y="130" width="30" height="40" rx="2" />
+                <rect class="car-zone" data-component="exhaust" x="700" y="200" width="40" height="15" rx="3" />
+                <rect class="car-zone" data-component="battery" x="250" y="240" width="300" height="15" rx="2" />
+                <rect class="car-zone" data-component="electronics" x="350" y="180" width="20" height="20" rx="2" />
+            </svg>
+        </div>
+        <div class="col-md-4">
+            <div id="component-popup" class="glass-card p-3" style="display:none; max-height:350px; overflow-y:auto;">
+                <h6 id="popup-title" class="text-warning"></h6>
+                <ul id="popup-list" class="list-group list-group-flush"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Сводка проекта -->
+{% if summary %}
+<div class="glass-card p-4 mt-4">
+    <h4 class="text-warning mb-3">📊 Сводка проекта</h4>
+    <p class="lead">Общая стоимость: <span class="text-info">${{ summary.total_cost }}</span></p>
+    <p>Максимальная сложность: <span class="text-info">{{ summary.max_difficulty }}/10</span></p>
+    <hr class="border-secondary">
+    <h5>Выбранные компоненты</h5>
+    <ul class="list-group list-group-flush">
+        {% for comp in summary.components %}
+        <li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between">
+            <div>
+                <strong>{{ comp.name }}</strong>
+                <span class="badge ms-2
+                    {% if comp.status == 'compatible' %}bg-success
+                    {% elif comp.status == 'warning' %}bg-warning text-dark
+                    {% else %}bg-danger{% endif %}">
+                    {% if comp.status == 'compatible' %}✅
+                    {% elif comp.status == 'warning' %}⚠️
+                    {% else %}❌{% endif %}
+                </span>
+                <br><small class="text-muted">{{ comp.description }}</small>
+            </div>
+            <div class="text-end">
+                <span class="text-info">${{ comp.cost }}</span><br>
+                <small class="text-muted">сложность {{ comp.difficulty }}</small>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<!-- Сохранение проекта -->
+{% if current_user.is_authenticated %}
+<div class="glass-card p-4 mt-4">
+    <h5 class="text-warning">💾 Сохранить проект</h5>
+    <form method="POST" action="{{ url_for('builder.save') }}">
+        <div class="mb-3">
+            <label for="project_name" class="form-label text-light">Название проекта</label>
+            <input type="text" class="form-control bg-dark text-light border-secondary" id="project_name" name="project_name" placeholder="Мой проект">
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input bg-dark border-secondary" id="is_public" name="is_public">
+            <label class="form-check-label text-light" for="is_public">Опубликовать в сообществе</label>
+        </div>
+        <button type="submit" class="btn btn-glow">Сохранить</button>
+    </form>
+</div>
+{% else %}
+<div class="glass-card p-4 mt-4 text-center">
+    <p class="text-muted">Войдите, чтобы сохранить проект</p>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light">Войти</a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/builder_2d.js') }}"></script>
+{% endblock %}

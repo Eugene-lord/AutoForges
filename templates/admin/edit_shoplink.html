@@ -1,0 +1,42 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_content %}
+<h2 class="text-light mb-3">{% if item %}Редактировать{% else %}Добавить{% endif %} цену</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label class="form-label text-light">Совместимость</label>
+        <select name="compatibility_id" class="form-select bg-dark text-light" required>
+            {% for c in compatibilities %}
+                <option value="{{ c.id }}" {% if item and item.compatibility_id == c.id %}selected{% endif %}>
+                    {{ c.vehicle_model.brand.name }} {{ c.vehicle_model.name }} - {{ c.component_type }} #{{ c.component_id }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Магазин</label>
+        <select name="shop_id" class="form-select bg-dark text-light" required>
+            {% for s in shops %}
+                <option value="{{ s.id }}" {% if item and item.shop_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Цена</label>
+        <input type="number" step="0.01" name="price" class="form-control bg-dark text-light" value="{{ item.price if item else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Валюта</label>
+        <input type="text" name="currency" class="form-control bg-dark text-light" value="{{ item.currency if item else 'USD' }}">
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Ссылка на товар</label>
+        <input type="text" name="url" class="form-control bg-dark text-light" value="{{ item.url if item else '' }}">
+    </div>
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input bg-dark border-secondary" id="in_stock" name="in_stock" {% if item and item.in_stock %}checked{% endif %}>
+        <label class="form-check-label text-light" for="in_stock">В наличии</label>
+    </div>
+    <button type="submit" class="btn btn-glow">Сохранить</button>
+    <a href="{{ url_for('admin.list_shoplinks') }}" class="btn btn-outline-light">Отмена</a>
+</form>
+{% endblock %}

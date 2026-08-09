@@ -1,0 +1,16 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_content %}
+<h2 class="text-light mb-3">{% if item %}Редактировать{% else %}Добавить{% endif %} подвеску</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label class="form-label text-light">Название</label>
+        <input type="text" name="name" class="form-control bg-dark text-light" value="{{ item.name if item else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Тип</label>
+        <input type="text" name="type" class="form-control bg-dark text-light" value="{{ item.type if item else '' }}">
+    </div>
+    <button type="submit" class="btn btn-glow">Сохранить</button>
+    <a href="{{ url_for('admin.list_suspensions') }}" class="btn btn-outline-light">Отмена</a>
+</form>
+{% endblock %}

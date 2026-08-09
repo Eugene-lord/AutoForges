@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Сообщество проектов{% endblock %}
+{% block content %}
+<h2 class="text-light mb-4">Сообщество</h2>
+{% if projects %}
+    <div class="row">
+        {% for project in projects %}
+        <div class="col-md-6 mb-4">
+            <div class="glass-card p-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="text-warning">{{ project.name or 'Без названия' }}</h5>
+                        <p class="text-light small">Автор: {{ project.user.username }} | {{ project.created_at.strftime('%d.%m.%Y') }}</p>
+                        <p class="text-muted small">{{ project.vehicle.brand.name }} {{ project.vehicle.name }} ({{ project.vehicle.generation }})</p>
+                        <span class="badge bg-info">${{ project.total_cost }}</span>
+                        <span class="badge bg-info ms-1">сложность {{ project.difficulty }}</span>
+                    </div>
+                    <a href="{{ url_for('project.view', project_id=project.id) }}" class="btn btn-glow btn-sm">Смотреть</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">Пока нет публичных проектов. Будьте первым!</p>
+{% endif %}
+{% endblock %}

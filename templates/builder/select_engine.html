@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Выбор двигателя — Конструктор{% endblock %}
+{% block content %}
+<h2 class="mb-4 text-light">Выберите двигатель для {{ vehicle.name }}</h2>
+<a href="{{ url_for('builder.index') }}" class="btn btn-outline-light btn-sm mb-3">← Вернуться в проект</a>
+
+{% if engines_data %}
+    <div class="row">
+        {% for item in engines_data %}
+        {% set engine = item.engine %}
+        <div class="col-md-6 mb-4">
+            <div class="glass-card p-3 position-relative">
+                <!-- Статус совместимости -->
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="text-light">{{ engine.name }} ({{ engine.engine_code }})</h5>
+                    <span class="badge
+                        {% if item.status == 'compatible' %}bg-success
+                        {% elif item.status == 'warning' %}bg-warning text-dark
+                        {% else %}bg-danger
+                        {% endif %}">
+                        {% if item.status == 'compatible' %}✅ Подходит
+                        {% elif item.status == 'warning' %}⚠ Требует доработок
+                        {% else %}❌ Несовместимо
+                        {% endif %}
+                    </span>
+                </div>
+                <p class="text-muted small">{{ item.description }}</p>
+                <ul class="list-unstyled small text-light">
+                    <li>Объём: {{ engine.displacement }} л</li>
+                    <li>Мощность: {{ engine.power_hp }} л.с.</li>
+                    <li>Крутящий момент: {{ engine.torque_nm }} Нм</li>
+                    {% if item.estimated_cost %}<li>Примерная стоимость свапа: ${{ item.estimated_cost }}</li>{% endif %}
+                    {% if item.difficulty %}<li>Сложность: {{ item.difficulty }}/10</li>{% endif %}
+                </ul>
+                <a href="{{ url_for('builder.set_engine_route', engine_id=engine.id) }}" class="btn btn-glow btn-sm mt-2">Выбрать</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">Для этого автомобиля пока нет данных о совместимых двигателях.</p>
+{% endif %}
+{% endblock %}

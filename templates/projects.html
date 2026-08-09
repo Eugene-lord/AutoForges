@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Мои проекты{% endblock %}
+{% block content %}
+<h2 class="text-light mb-4">Мои проекты</h2>
+{% if projects %}
+    <div class="row">
+        {% for project in projects %}
+        <div class="col-md-6 mb-4">
+            <div class="glass-card p-3">
+                <h5 class="text-warning">{{ project.name or 'Без названия' }}</h5>
+                <p class="text-light small">Автомобиль: {{ project.vehicle.brand.name }} {{ project.vehicle.name }} ({{ project.vehicle.generation }})</p>
+                <p class="text-muted small">Стоимость: ${{ project.total_cost }} | Сложность: {{ project.difficulty }}/10</p>
+                <a href="{{ url_for('profile.project_detail', project_id=project.id) }}" class="btn btn-glow btn-sm">Подробнее</a>
+                <a href="{{ url_for('project.edit', project_id=project.id) }}" class="btn btn-outline-light btn-sm">✏️</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">У вас пока нет сохранённых проектов.</p>
+{% endif %}
+{% endblock %}

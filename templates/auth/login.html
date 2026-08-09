@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Вход — AUTOFORGE{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="glass-card p-4">
+            <h2 class="text-light mb-4">Вход</h2>
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="username" class="form-label text-light">Имя пользователя</label>
+                    <input type="text" class="form-control bg-dark text-light border-secondary" id="username" name="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label text-light">Пароль</label>
+                    <input type="password" class="form-control bg-dark text-light border-secondary" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-glow w-100">Войти</button>
+            </form>
+            <div class="mt-3 text-center">
+                <small class="text-muted">Нет аккаунта? <a href="{{ url_for('auth.register') }}">Зарегистрироваться</a></small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

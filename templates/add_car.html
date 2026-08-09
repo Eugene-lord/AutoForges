@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Добавить автомобиль в гараж{% endblock %}
+{% block content %}
+<h2 class="text-light mb-4">Добавить автомобиль</h2>
+<div class="glass-card p-4 col-md-6">
+    <form method="POST">
+        <div class="mb-3">
+            <label for="brand_id" class="form-label text-light">Марка</label>
+            <select class="form-select bg-dark text-light border-secondary" id="brand_id" onchange="loadModels()">
+                <option value="">-- Выберите марку --</option>
+                {% for brand in brands %}
+                <option value="{{ brand.id }}">{{ brand.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="model_id" class="form-label text-light">Модель</label>
+            <select class="form-select bg-dark text-light border-secondary" id="model_id" name="model_id" required>
+                <option value="">-- Сначала выберите марку --</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="year" class="form-label text-light">Год выпуска</label>
+            <input type="number" class="form-control bg-dark text-light border-secondary" id="year" name="year" placeholder="2010">
+        </div>
+        <div class="mb-3">
+            <label for="nickname" class="form-label text-light">Название (по желанию)</label>
+            <input type="text" class="form-control bg-dark text-light border-secondary" id="nickname" name="nickname" placeholder="Моя ласточка">
+        </div>
+        <button type="submit" class="btn btn-glow">Добавить</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function loadModels() {
+    const brandId = document.getElementById('brand_id').value;
+    fetch('/builder/select-vehicle?brand_id=' + brandId)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const modelsList = doc.querySelectorAll('.glass-card');
+            const modelSelect = document.getElementById('model_id');
+            modelSelect.innerHTML = '<option value="">-- Выберите модель --</option>';
+            modelsList.forEach(card => {
+                const link = card.querySelector('a');
+                if (link) {
+                    const url = new URL(link.href);
+                    const modelId = url.pathname.split('/').pop();
+                    const modelName = card.querySelector('h5').innerText;
+                    const option = document.createElement('option');
+                    option.value = modelId;
+                    option.textContent = modelName;
+                    modelSelect.appendChild(option);
+                }
+            });
+        });
+}
+</script>
+{% endblock %}

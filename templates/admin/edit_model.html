@@ -1,0 +1,42 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_content %}
+<h2 class="text-light mb-3">{% if item %}Редактировать{% else %}Добавить{% endif %} модель</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label class="form-label text-light">Бренд</label>
+        <select name="brand_id" class="form-select bg-dark text-light" required>
+            {% for b in brands %}
+                <option value="{{ b.id }}" {% if item and item.brand_id == b.id %}selected{% endif %}>{{ b.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Название</label>
+        <input type="text" name="name" class="form-control bg-dark text-light" value="{{ item.name if item else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Поколение</label>
+        <input type="text" name="generation" class="form-control bg-dark text-light" value="{{ item.generation if item else '' }}">
+    </div>
+    <div class="row">
+        <div class="col mb-3">
+            <label class="form-label text-light">Год начала</label>
+            <input type="number" name="year_start" class="form-control bg-dark text-light" value="{{ item.year_start if item else '' }}">
+        </div>
+        <div class="col mb-3">
+            <label class="form-label text-light">Год окончания</label>
+            <input type="number" name="year_end" class="form-control bg-dark text-light" value="{{ item.year_end if item else '' }}">
+        </div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Тип кузова</label>
+        <input type="text" name="body_type" class="form-control bg-dark text-light" value="{{ item.body_type if item else '' }}">
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Описание</label>
+        <textarea name="description" class="form-control bg-dark text-light">{{ item.description if item else '' }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-glow">Сохранить</button>
+    <a href="{{ url_for('admin.list_models') }}" class="btn btn-outline-light">Отмена</a>
+</form>
+{% endblock %}

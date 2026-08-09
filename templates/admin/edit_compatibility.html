@@ -1,0 +1,62 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_content %}
+<h2 class="text-light mb-3">{% if item %}Редактировать{% else %}Добавить{% endif %} совместимость</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label class="form-label text-light">Модель авто</label>
+        <select name="vehicle_model_id" class="form-select bg-dark text-light" required>
+            {% for m in models %}
+                <option value="{{ m.id }}" {% if item and item.vehicle_model_id == m.id %}selected{% endif %}>{{ m.brand.name }} {{ m.name }} ({{ m.generation }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Тип компонента</label>
+        <select name="component_type" class="form-select bg-dark text-light" required>
+            <option value="engine" {% if item and item.component_type == 'engine' %}selected{% endif %}>engine</option>
+            <option value="transmission" {% if item and item.component_type == 'transmission' %}selected{% endif %}>transmission</option>
+            <option value="differential" {% if item and item.component_type == 'differential' %}selected{% endif %}>differential</option>
+            <option value="suspension" {% if item and item.component_type == 'suspension' %}selected{% endif %}>suspension</option>
+            <option value="brakes" {% if item and item.component_type == 'brakes' %}selected{% endif %}>brakes</option>
+            <option value="cooling" {% if item and item.component_type == 'cooling' %}selected{% endif %}>cooling</option>
+            <option value="electronics" {% if item and item.component_type == 'electronics' %}selected{% endif %}>electronics</option>
+            <option value="ecu" {% if item and item.component_type == 'ecu' %}selected{% endif %}>ecu</option>
+            <option value="turbo" {% if item and item.component_type == 'turbo' %}selected{% endif %}>turbo</option>
+            <option value="intercooler" {% if item and item.component_type == 'intercooler' %}selected{% endif %}>intercooler</option>
+            <option value="exhaust" {% if item and item.component_type == 'exhaust' %}selected{% endif %}>exhaust</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">ID компонента</label>
+        <input type="number" name="component_id" class="form-control bg-dark text-light" value="{{ item.component_id if item else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Статус</label>
+        <select name="status" class="form-select bg-dark text-light">
+            <option value="compatible" {% if item and item.status == 'compatible' %}selected{% endif %}>compatible</option>
+            <option value="warning" {% if item and item.status == 'warning' %}selected{% endif %}>warning</option>
+            <option value="incompatible" {% if item and item.status == 'incompatible' %}selected{% endif %}>incompatible</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Описание</label>
+        <textarea name="description" class="form-control bg-dark text-light">{{ item.description if item else '' }}</textarea>
+    </div>
+    <div class="row">
+        <div class="col mb-3">
+            <label class="form-label text-light">Стоимость</label>
+            <input type="number" step="0.01" name="estimated_cost" class="form-control bg-dark text-light" value="{{ item.estimated_cost if item else '' }}">
+        </div>
+        <div class="col mb-3">
+            <label class="form-label text-light">Сложность</label>
+            <input type="number" name="difficulty" class="form-control bg-dark text-light" value="{{ item.difficulty if item else '' }}">
+        </div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-light">Заметки</label>
+        <textarea name="notes" class="form-control bg-dark text-light">{{ item.notes if item else '' }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-glow">Сохранить</button>
+    <a href="{{ url_for('admin.list_compatibilities') }}" class="btn btn-outline-light">Отмена</a>
+</form>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Редактирование проекта{% endblock %}
+{% block content %}
+<h2 class="text-light mb-4">Редактирование проекта</h2>
+<div class="glass-card p-4 col-md-6">
+    <form method="POST">
+        <div class="mb-3">
+            <label for="name" class="form-label text-light">Название</label>
+            <input type="text" class="form-control bg-dark text-light border-secondary" id="name" name="name" value="{{ project.name or '' }}">
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input bg-dark border-secondary" id="is_public" name="is_public" {% if project.is_public %}checked{% endif %}>
+            <label class="form-check-label text-light" for="is_public">Публичный проект (виден в сообществе)</label>
+        </div>
+        <button type="submit" class="btn btn-glow">Сохранить</button>
+        <a href="{{ url_for('project.view', project_id=project.id) }}" class="btn btn-outline-light ms-2">Отмена</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+/* === Глобальные стили тёмной темы === */
+body.dark-theme {
+    background: #0a0a0a;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+}
+
+/* Glassmorphism навигация */
+.glass-nav {
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Hero секция */
+.hero {
+    background: radial-gradient(circle at 30% 30%, #1e1e1e, #050505);
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #ff6b6b, #ffa726, #ffeb3b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.btn-glow {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(255,107,107,0.3);
+}
+
+.btn-glow:hover {
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 0 30px rgba(255,167,38,0.5);
+    transform: translateY(-2px);
+}
+
+/* Стеклянные карточки */
+.glass-card {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.glass-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(255,107,107,0.2);
+    border-color: rgba(255,255,255,0.2);
+}
+
+.icon {
+    font-size: 2.5rem;
+}
+
+/* Адаптивность уже за счёт Bootstrap, но можно донастроить */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+}
+/* Стили для интерактивных зон на 2D-схеме */
+.car-zone {
+    fill: rgba(255,255,255,0);
+    stroke: rgba(255,255,255,0.2);
+    stroke-width: 1;
+    transition: fill 0.2s, stroke 0.2s;
+    pointer-events: all;
+}

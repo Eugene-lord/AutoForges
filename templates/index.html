@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}AUTOFORGE — Главная{% endblock %}
+{% block content %}
+<section class="hero d-flex align-items-center">
+    <div class="container text-center">
+        <h1 class="display-3 fw-bold gradient-text">AUTOFORGE</h1>
+        <p class="lead mt-3">Собери свой идеальный автомобиль.<br>Проверь совместимость, узнай стоимость и сложность свапа.</p>
+        <a href="/catalog" class="btn btn-glow btn-lg mt-4">Начать проект</a>
+    </div>
+</section>
+
+<section class="features py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <a href="/builder" class="text-decoration-none">
+                    <div class="glass-card p-4 text-center h-100">
+                        <div class="icon mb-3">🔧</div>
+                        <h3>Конструктор проекта</h3>
+                        <p>Пошаговый подбор деталей с автоматическим расчётом совместимости и бюджета.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="/ai" class="text-decoration-none">
+                    <div class="glass-card p-4 text-center h-100">
+                        <div class="icon mb-3">🤖</div>
+                        <h3>ИИ-помощник</h3>
+                        <p>Спросите «как поставить 2JZ в BMW E46» — получите полный план действий.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="/catalog" class="text-decoration-none">
+                    <div class="glass-card p-4 text-center h-100">
+                        <div class="icon mb-3">🛒</div>
+                        <h3>Магазины и цены</h3>
+                        <p>Автоматический поиск лучших цен на детали по десяткам поставщиков.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if popular_projects %}
+<section class="popular py-5">
+    <div class="container">
+        <h2 class="text-light mb-4">🔥 Популярные проекты</h2>
+        <div class="row">
+            {% for project in popular_projects %}
+            <div class="col-md-4 mb-4">
+                <div class="glass-card p-3 h-100">
+                    <h5 class="text-warning">{{ project.name or 'Без названия' }}</h5>
+                    <p class="text-light small">{{ project.vehicle.brand.name }} {{ project.vehicle.name }} ({{ project.vehicle.generation }})</p>
+                    <p class="text-muted small">Автор: {{ project.user.username }} | {{ project.created_at.strftime('%d.%m.%Y') }}</p>
+                    <a href="{{ url_for('project.view', project_id=project.id) }}" class="btn btn-glow btn-sm">Смотреть</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

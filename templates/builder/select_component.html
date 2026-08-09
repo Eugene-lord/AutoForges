@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Выбор {{ component_label }} — Конструктор{% endblock %}
+{% block content %}
+<h2 class="mb-4 text-light">Выберите {{ component_label }} для {{ vehicle.name }}</h2>
+<a href="{{ url_for('builder.index') }}" class="btn btn-outline-light btn-sm mb-3">← Вернуться в проект</a>
+
+{% if items %}
+    <div class="row">
+        {% for item_data in items %}
+        {% set item = item_data.item %}
+        <div class="col-md-6 mb-4">
+            <div class="glass-card p-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="text-light">{{ item.name }}</h5>
+                    <span class="badge
+                        {% if item_data.status == 'compatible' %}bg-success
+                        {% elif item_data.status == 'warning' %}bg-warning text-dark
+                        {% else %}bg-danger
+                        {% endif %}">
+                        {% if item_data.status == 'compatible' %}✅ Подходит
+                        {% elif item_data.status == 'warning' %}⚠ Доработки
+                        {% else %}❌ Несовместимо
+                        {% endif %}
+                    </span>
+                </div>
+                <p class="text-muted small">{{ item_data.description }}</p>
+                <ul class="list-unstyled small text-light">
+                    {% if component_type == 'engine' %}
+                        <li>Объём: {{ item.displacement }} л</li>
+                        <li>Мощность: {{ item.power_hp }} л.с.</li>
+                        <li>Крутящий момент: {{ item.torque_nm }} Нм</li>
+                    {% elif component_type == 'transmission' %}
+                        <li>Тип: {{ item.type }}</li>
+                        <li>Передач: {{ item.gears }}</li>
+                    {% elif component_type == 'differential' %}
+                        <li>Тип: {{ item.type }}</li>
+                        <li>Передаточное число: {{ item.ratio }}</li>
+                    {% elif component_type == 'suspension' %}
+                        <li>Тип: {{ item.type }}</li>
+                    {% elif component_type == 'brakes' %}
+                        <li>Тип: {{ item.type }}</li>
+                        <li>Размер: {{ item.size }}</li>
+                    {% elif component_type == 'cooling' %}
+                        <li>Тип: {{ item.type }}</li>
+                    {% elif component_type == 'electronics' %}
+                        <li>{{ item.description }}</li>
+                    {% elif component_type == 'ecu' %}
+                        <li>Тип: {{ item.type }}</li>
+                    {% elif component_type == 'turbo' %}
+                        <li>Давление наддува: {{ item.pressure }}</li>
+                    {% elif component_type == 'intercooler' %}
+                        <li>Тип: {{ item.type }}</li>
+                    {% elif component_type == 'exhaust' %}
+                        <li>Материал: {{ item.material }}</li>
+                    {% elif component_type == 'electric_motor' %}
+                        <li>Мощность: {{ item.power_hp }} л.с.</li>
+                        <li>Крутящий момент: {{ item.torque_nm }} Нм</li>
+                        <li>Тип: {{ item.motor_type }}</li>
+                    {% elif component_type == 'battery' %}
+                        <li>Ёмкость: {{ item.capacity_kwh }} кВт⋅ч</li>
+                        <li>Напряжение: {{ item.voltage }} В</li>
+                        <li>Тип: {{ item.battery_type }}</li>
+                    {% elif component_type == 'inverter' %}
+                        <li>Мощность: {{ item.power_kw }} кВт</li>
+                        <li>Тип: {{ item.inverter_type }}</li>
+                    {% endif %}
+                </ul>
+                {% if item_data.estimated_cost %}
+                    <small class="text-info">Стоимость свапа: ${{ item_data.estimated_cost }}</small><br>
+                {% endif %}
+                {% if item_data.difficulty %}
+                    <small class="text-info">Сложность: {{ item_data.difficulty }}/10</small>
+                {% endif %}
+                
+                <!-- Цены магазинов -->
+                {% if item_data.prices %}
+                    <div class="mt-2">
+                        <small class="text-warning">Где купить:</small>
+                        <ul class="list-unstyled small mb-0">
+                            {% for price in item_data.prices[:3] %}
+                            <li class="text-light">
+                                {{ price.shop_name }}: {{ price.price }} {{ price.currency }}
+                                {% if price.in_stock %}
+                                    <span class="text-success">✓</span>
+                                {% else %}
+                                    <span class="text-danger">✗</span>
+                                {% endif %}
+                                {% if price.url %}
+                                    <a href="{{ price.url }}" target="_blank" class="btn btn-outline-light btn-sm py-0 px-1 ms-2">Купить</a>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <div class="mt-2">
+                    <a href="{{ url_for('builder.set_component_route', component_type=component_type, item_id=item.id) }}" class="btn btn-glow btn-sm">Выбрать</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">Нет данных о совместимых компонентах этого типа.</p>
+{% endif %}
+{% endblock %}

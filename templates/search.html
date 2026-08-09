@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Поиск{% endblock %}
+{% block content %}
+<h2 class="text-light mb-4">Результаты поиска{% if query %} по запросу «{{ query }}»{% endif %}</h2>
+
+{% if query %}
+    <h4 class="text-warning mb-3">Проекты</h4>
+    {% if projects %}
+        <div class="row">
+            {% for project in projects %}
+            <div class="col-md-6 mb-4">
+                <div class="glass-card p-3">
+                    <h5>{{ project.name }}</h5>
+                    <p class="text-light small">{{ project.vehicle.brand.name }} {{ project.vehicle.name }} ({{ project.vehicle.generation }})</p>
+                    <p class="text-muted small">Автор: {{ project.user.username }}</p>
+                    <a href="{{ url_for('project.view', project_id=project.id) }}" class="btn btn-glow btn-sm">Смотреть</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">Проекты не найдены.</p>
+    {% endif %}
+
+    <h4 class="text-warning mb-3 mt-4">Автомобили</h4>
+    {% if models %}
+        <div class="row">
+            {% for model in models %}
+            <div class="col-md-6 mb-4">
+                <div class="glass-card p-3">
+                    <h5>{{ model.brand.name }} {{ model.name }} ({{ model.generation }})</h5>
+                    <p class="text-light small">{{ model.body_type }}, {{ model.year_start }}–{{ model.year_end }}</p>
+                    <a href="{{ url_for('builder.set_vehicle_route', model_id=model.id) }}" class="btn btn-glow btn-sm">Выбрать для проекта</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">Автомобили не найдены.</p>
+    {% endif %}
+{% else %}
+    <p class="text-muted">Введите поисковый запрос.</p>
+{% endif %}
+{% endblock %}

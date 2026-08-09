@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}{{ model.brand.name }} {{ model.name }}{% endblock %}
+{% block content %}
+<h2 class="text-light">{{ model.brand.name }} {{ model.name }} <small class="text-muted">{{ model.generation }}</small></h2>
+<p class="text-muted">{{ model.body_type }} | {{ model.year_start }}–{{ model.year_end }}</p>
+<p>{{ model.description }}</p>
+
+<h4 class="text-light mt-4">Доступные двигатели</h4>
+{% if engines %}
+    <div class="row">
+    {% for engine in engines %}
+        <div class="col-md-4 mb-3">
+            <div class="glass-card p-3">
+                <h5 class="text-warning">{{ engine.name }}</h5>
+                <ul class="list-unstyled small text-light">
+                    <li>Объём: {{ engine.displacement }} л</li>
+                    <li>Мощность: {{ engine.power_hp }} л.с.</li>
+                    <li>Крутящий момент: {{ engine.torque_nm }} Нм</li>
+                    <li>Топливо: {{ engine.fuel_type }}</li>
+                    <li>Конфигурация: {{ engine.configuration }}</li>
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">Двигатели пока не добавлены.</p>
+{% endif %}
+
+<a href="{{ url_for('catalog.model_list', brand_id=model.brand_id) }}" class="btn btn-outline-light mt-3">← Назад к моделям {{ model.brand.name }}</a>
+{% endblock %}

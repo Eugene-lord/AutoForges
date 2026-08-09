@@ -1,0 +1,5 @@
+﻿venv/
+instance/
+_pycache_/
+*.рус
+.env

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Личный кабинет{% endblock %}
+{% block content %}
+<h2 class="text-light mb-4">Личный кабинет</h2>
+<div class="glass-card p-4 mb-4">
+    <h5 class="text-warning">Привет, {{ current_user.username }}!</h5>
+    <p class="text-light">Email: {{ current_user.email }}</p>
+    <a href="{{ url_for('profile.projects') }}" class="btn btn-outline-light btn-sm">Мои проекты</a>
+    <a href="{{ url_for('profile.favorites') }}" class="btn btn-outline-light btn-sm">Избранное</a>
+    <a href="{{ url_for('profile.garage') }}" class="btn btn-outline-light btn-sm">Мой гараж</a>
+</div>
+{% endblock %}
