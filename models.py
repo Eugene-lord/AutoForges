@@ -130,11 +130,22 @@ class Compatibility(db.Model):
     vehicle_model_id = db.Column(db.Integer, db.ForeignKey('models.id'), nullable=False)
     component_type = db.Column(db.String(50), nullable=False)
     component_id = db.Column(db.Integer, nullable=False)
+    # Существующее поле для совместимости (compatible, warning, incompatible)
     status = db.Column(db.String(20), nullable=False, default='compatible')
     description = db.Column(db.Text, nullable=True)
     estimated_cost = db.Column(db.Float, nullable=True)
     difficulty = db.Column(db.Integer, nullable=True)
     notes = db.Column(db.Text, nullable=True)
+
+    # Новые поля для AI-метаданных
+    knowledge_status = db.Column(db.String(20), default='VERIFIED')  # VERIFIED, REVIEW_REQUIRED, AI_GENERATED, REJECTED
+    source = db.Column(db.String(50), default='manual')  # manual, ai_deepseek, ai_gigachat, user_submitted
+    confidence = db.Column(db.Float, nullable=True)       # 0.0 - 1.0
+    risk_level = db.Column(db.String(10), default='LOW')  # LOW, MEDIUM, HIGH
+    verified_by = db.Column(db.Integer, nullable=True)    # ID пользователя-администратора
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     __table_args__ = (
         db.UniqueConstraint('vehicle_model_id', 'component_type', 'component_id', name='uix_comp'),
