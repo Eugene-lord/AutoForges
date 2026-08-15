@@ -262,3 +262,33 @@ class KnowledgeItem(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     verified_by = db.Column(db.Integer, nullable=True)          # ID администратора
     verified_at = db.Column(db.DateTime, nullable=True)
+
+class Swap(db.Model):
+    __tablename__ = 'swaps'
+    id = db.Column(db.Integer, primary_key=True)
+    # Исходный компонент
+    source_vehicle_model_id = db.Column(db.Integer, db.ForeignKey('models.id'), nullable=False)
+    source_component_type = db.Column(db.String(50), nullable=False)  # engine, transmission, etc.
+    source_component_id = db.Column(db.Integer, nullable=False)       # ID компонента в соответствующей таблице
+    # Целевой компонент
+    target_component_type = db.Column(db.String(50), nullable=False)
+    target_component_id = db.Column(db.Integer, nullable=False)
+    # Дополнительные данные
+    transmission_id = db.Column(db.Integer, nullable=True)            # если свап требует конкретной КПП
+    difficulty = db.Column(db.Integer, nullable=True)                # 1-10
+    required_modifications = db.Column(db.Text, nullable=True)       # JSON-строка: ["mounts", "wiring", ...]
+    required_parts = db.Column(db.Text, nullable=True)               # JSON-строка: ["adapter", "clutch", ...]
+    notes = db.Column(db.Text, nullable=True)
+
+    # AI-метаданные
+    status = db.Column(db.String(20), default='AI_GENERATED')        # AI_GENERATED, REVIEW_REQUIRED, VERIFIED, REJECTED
+    source = db.Column(db.String(50), default='ai')
+    confidence = db.Column(db.Float, nullable=True)
+    risk_level = db.Column(db.String(10), default='LOW')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Связь с моделью автомобиля (для удобства)
+    source_vehicle = db.relationship('Model', foreign_keys=[source_vehicle_model_id], backref='source_swaps')
