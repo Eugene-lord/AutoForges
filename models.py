@@ -248,3 +248,17 @@ class UserCar(db.Model):
 
     user = db.relationship('User', backref='cars')
     model = db.relationship('Model')
+
+class KnowledgeItem(db.Model):
+    __tablename__ = 'knowledge_items'
+    id = db.Column(db.Integer, primary_key=True)
+    knowledge_type = db.Column(db.String(50), nullable=False)  # например: 'compatibility', 'swap', 'component_info'
+    source = db.Column(db.String(50), default='ai')             # 'ai', 'user', 'manual'
+    confidence = db.Column(db.Float, nullable=True)             # 0.0 - 1.0
+    risk_level = db.Column(db.String(10), default='LOW')        # LOW, MEDIUM, HIGH
+    status = db.Column(db.String(20), default='AI_GENERATED')   # AI_GENERATED, REVIEW_REQUIRED, VERIFIED, REJECTED
+    data_json = db.Column(db.Text, nullable=True)               # JSON-строка с содержимым
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    verified_by = db.Column(db.Integer, nullable=True)          # ID администратора
+    verified_at = db.Column(db.DateTime, nullable=True)
