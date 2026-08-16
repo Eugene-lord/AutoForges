@@ -23,6 +23,7 @@
                         {% endif %}
                     </span>
                 </div>
+                <a href="{{ url_for('builder.view_swaps', component_type=component_type, component_id=item.id) }}" class="btn btn-outline-info btn-sm mt-2">Свапы</a>
                 <p class="text-muted small">{{ item_data.description }}</p>
                 <ul class="list-unstyled small text-light">
                     {% if component_type == 'engine' %}

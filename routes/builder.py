@@ -6,6 +6,7 @@ from services.builder import (
     get_summary, save_project, get_shop_prices
 )
 from services.catalog import get_all_brands, get_models_by_brand, get_brand_by_id
+from models import Swap
 
 builder_bp = Blueprint('builder', __name__, url_prefix='/builder')
 
@@ -130,4 +131,45 @@ def api_components(vehicle_model_id, component_type):
             'estimated_cost': item['estimated_cost'],
             'difficulty': item['difficulty']
         })
+
+@builder_bp.route('/swaps/<component_type>/<int:component_id>')
+def view_swaps(component_type, component_id):
+    vehicle = get_vehicle()
+    if not vehicle:
+        return redirect(url_for('builder.select_vehicle'))
+
+       # Для примера используем выбранный автомобиль (vehicle['id'])
+    vehicle_model_id = vehicle['id']
+
+    # Получаем список свапов для данного исходного компонента
+    swaps = Swap.query.filter_by(
+        source_vehicle_model_id=vehicle_model_id,
+        source_component_type=component_type,
+        source_component_id=component_id
+    ).all()
+
+    # Если свапов нет, можно показать заглушку или сгенерировать один?
+    # Пока просто передадим в шаблон
+    return render_template('builder/swaps.html', swaps=swaps, component_type=component_type, component_id=component_id, vehicle=vehicle)
+
+@builder_bp.route('/generate-swap/<component_type>/<int:component_id>')
+def generate_swap(component_type, component_id):
+    vehicle = get_vehicle()
+    if not vehicle:
+        return redirect(url_for('builder.select_vehicle'))
+    vehicle_model_id = vehicle['id']
+
+    # Пока для демонстрации будем генерировать свап на двигатель 2JZ-GTE (target_component_id=1)
+    # В будущем здесь будет выбор target из AI или из списка
+    from services.compatibility_engine import generate_swap_and_save
+    swap = generate_swap_and_save(
+        source_vehicle_model_id=vehicle_model_id,
+        source_component_type=component_type,
+        source_component_id=component_id,
+        target_component_type=component_type,
+        target_component_id=1  # предполагаем, что 2JZ-GTE имеет id=1
+    )
+    flash('Свап сгенерирован и сохранён!', 'success')
+    return redirect(url_for('builder.view_swaps', component_type=component_type, component_id=component_id))
+
     return {'components': result}
