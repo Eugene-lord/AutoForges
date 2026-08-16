@@ -59,4 +59,6 @@ def create_app(config_class=Config):
         seed()
         return 'База данных заполнена!'    
 
+        # Временный маршрут для тестирования Knowledge Service
+   
     return app
