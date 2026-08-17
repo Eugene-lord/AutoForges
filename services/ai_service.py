@@ -5,42 +5,40 @@ from models import Article, Compatibility, Model, Brand
 
 def ask_deepseek(question):
     """
-    Отправляет вопрос в DeepSeek API с контекстом из базы знаний AUTOFORGE.
-    Возвращает строку с ответом.
+    Отправляет вопрос в DeepSeek API с контекстом из базы знаний AUTOMATCH.
+    При недоступности DeepSeek возвращает заглушку через MockAIProvider.
     """
-    # 1. Собираем контекст из базы
+    # 1. Собираем контекст из базы (статьи, совместимости)
     context = _build_context(question)
 
     # 2. Формируем системный промпт
-    system_prompt = """Ты — эксперт по автомобильным свапам и модификациям, работаешь в платформе AUTOFORGE.
-Твоя задача — помогать пользователям с выбором компонентов, объяснять совместимость и давать рекомендации на основе базы знаний AUTOFORGE.
+    system_prompt = """Ты — эксперт по автомобильным свапам и модификациям, работаешь в платформе AutoForge.
+Твоя задача — помогать пользователям с выбором компонентов, объяснять совместимость и давать рекомендации на основе базы знаний AutoForge.
 Отвечай на русском языке, структурированно: сначала краткий ответ, затем список необходимых деталей или шагов.
 Используй только информацию из предоставленного контекста. Если данных недостаточно, честно скажи об этом.
 Никогда не выдумывай несуществующие детали или цены."""
 
-    # 3. Собираем сообщения
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"Контекст из базы AUTOFORGE:\n{context}\n\nВопрос пользователя: {question}"}
+        {"role": "user", "content": f"Контекст из базы AutoForge:\n{context}\n\nВопрос пользователя: {question}"}
     ]
 
-    # 4. Отправляем запрос в DeepSeek
+    # 3. Используем FallbackProvider (DeepSeek -> Mock)
+    from services.ai_provider import FallbackProvider
+    provider = FallbackProvider()
     try:
-        client = openai.OpenAI(
-            api_key=current_app.config['DEEPSEEK_API_KEY'],
-            base_url=current_app.config.get('DEEPSEEK_BASE_URL', 'https://api.deepseek.com/v1')
+        # Пытаемся получить ответ от провайдера (структурированный не нужен, просто текст)
+        schema = {"type": "object", "properties": {"answer": {"type": "string"}}, "required": ["answer"]}
+        result = provider.generate_structured_knowledge(
+            prompt=question + "\nКонтекст:\n" + context,
+            schema=schema
         )
-        response = client.chat.completions.create(
-            model="deepseek-chat",
-            messages=messages,
-            temperature=0.3,
-            max_tokens=1500,
-            stream=False
-        )
-        return response.choices[0].message.content.strip()
+        if not result or 'answer' not in result:
+            return "ИИ-сервис временно недоступен. Попробуйте позже или воспользуйтесь конструктором свапов."
+        return result['answer']
     except Exception as e:
-        current_app.logger.error(f"DeepSeek API error: {e}")
-        return "Извините, произошла ошибка при обращении к ИИ. Попробуйте позже."
+        print(f"Ошибка при обращении к AI: {e}")
+        return "ИИ-сервис временно недоступен. Вы можете воспользоваться конструктором свапов."
 
 from sqlalchemy import or_
 

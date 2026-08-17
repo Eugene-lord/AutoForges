@@ -27,7 +27,8 @@ def find_swap_in_db(source_vehicle_model_id, source_component_type, source_compo
 
 def generate_swap_and_save(source_vehicle_model_id, source_component_type, source_component_id,
                            target_component_type, target_component_id):
-    provider = MockAIProvider()
+    from services.ai_provider import FallbackProvider
+    provider = FallbackProvider()
     prompt = f"Опиши свап из {source_component_type} id={source_component_id} в {target_component_type} id={target_component_id} для автомобиля id={source_vehicle_model_id}"
     data = provider.generate_structured_knowledge(prompt, SWAP_SCHEMA)
 

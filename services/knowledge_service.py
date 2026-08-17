@@ -39,8 +39,8 @@ def generate_knowledge(prompt: str, knowledge_type: str = "swap") -> KnowledgeIt
     Возвращает объект KnowledgeItem.
     """
     # Создаём экземпляр провайдера (DeepSeek)
-    from services.mock_ai_provider import MockAIProvider
-    provider = MockAIProvider()  
+    from services.ai_provider import FallbackProvider
+    provider = FallbackProvider()  
     # Вызываем AI
     data = provider.generate_structured_knowledge(prompt, JSON_SCHEMA)
     # Классифицируем риск

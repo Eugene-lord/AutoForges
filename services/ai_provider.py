@@ -51,3 +51,23 @@ class DeepSeekProvider(AIProvider):
         except Exception as e:
             print(f"DeepSeek error: {e}")
             raise
+
+class FallbackProvider(AIProvider):
+    """Провайдер с fallback: сначала DeepSeek, при ошибке — Mock."""
+    def __init__(self):
+        self.primary = None
+        try:
+            self.primary = DeepSeekProvider()
+        except Exception as e:
+            print(f"DeepSeek не инициализирован: {e}")
+        # Резервный провайдер
+        from services.mock_ai_provider import MockAIProvider
+        self.fallback = MockAIProvider()
+
+    def generate_structured_knowledge(self, prompt: str, schema: dict) -> dict:
+        if self.primary:
+            try:
+                return self.primary.generate_structured_knowledge(prompt, schema)
+            except Exception as e:
+                print(f"Ошибка DeepSeek, переключаюсь на Mock: {e}")
+        return self.fallback.generate_structured_knowledge(prompt, schema)
