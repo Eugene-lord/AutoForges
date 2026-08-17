@@ -4,6 +4,8 @@ from models import (db, Brand, Model, Engine, Transmission, Differential,
                     Suspension, Brake, Cooling, Electronics, ECU, Turbo,
                     Intercooler, Exhaust, Compatibility, Article, Shop, ShopLink, ElectricMotor, Battery, Inverter)
 from functools import wraps
+from datetime import datetime
+from models import KnowledgeItem, Swap
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -938,3 +940,63 @@ def delete_inverter(id):
     db.session.commit()
     flash('Инвертор удалён', 'info')
     return redirect(url_for('admin.list_inverters'))
+
+# ---------- AI KNOWLEDGE QUEUE ----------
+@admin_bp.route('/knowledge-items')
+@admin_required
+def list_knowledge_items():
+    items = KnowledgeItem.query.order_by(KnowledgeItem.created_at.desc()).all()
+    return render_template('admin/list_knowledge_items.html', items=items)
+
+@admin_bp.route('/knowledge-items/<int:id>/set-status', methods=['POST'])
+@admin_required
+def set_knowledge_status(id):
+    item = KnowledgeItem.query.get_or_404(id)
+    new_status = request.form.get('status')
+    if new_status in ['VERIFIED', 'REJECTED', 'REVIEW_REQUIRED', 'AI_GENERATED']:
+        item.status = new_status
+        if new_status == 'VERIFIED':
+            item.verified_by = current_user.id
+            item.verified_at = datetime.utcnow()
+        db.session.commit()
+        flash('Статус обновлён.', 'success')
+    return redirect(url_for('admin.list_knowledge_items'))
+
+@admin_bp.route('/knowledge-items/<int:id>/delete', methods=['POST'])
+@admin_required
+def delete_knowledge_item(id):
+    item = KnowledgeItem.query.get_or_404(id)
+    db.session.delete(item)
+    db.session.commit()
+    flash('Запись удалена.', 'info')
+    return redirect(url_for('admin.list_knowledge_items'))
+
+# ---------- SWAPS ----------
+@admin_bp.route('/swaps')
+@admin_required
+def list_swaps():
+    swaps = Swap.query.order_by(Swap.created_at.desc()).all()
+    return render_template('admin/list_swaps.html', swaps=swaps)
+
+@admin_bp.route('/swaps/<int:id>/set-status', methods=['POST'])
+@admin_required
+def set_swap_status(id):
+    swap = Swap.query.get_or_404(id)
+    new_status = request.form.get('status')
+    if new_status in ['VERIFIED', 'REJECTED', 'REVIEW_REQUIRED', 'AI_GENERATED']:
+        swap.status = new_status
+        if new_status == 'VERIFIED':
+            swap.verified_by = current_user.id
+            swap.verified_at = datetime.utcnow()
+        db.session.commit()
+        flash('Статус свапа обновлён.', 'success')
+    return redirect(url_for('admin.list_swaps'))
+
+@admin_bp.route('/swaps/<int:id>/delete', methods=['POST'])
+@admin_required
+def delete_swap(id):
+    swap = Swap.query.get_or_404(id)
+    db.session.delete(swap)
+    db.session.commit()
+    flash('Свап удалён.', 'info')
+    return redirect(url_for('admin.list_swaps'))

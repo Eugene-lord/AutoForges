@@ -1,0 +1,46 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_content %}
+<h2 class="text-light mb-3">Свапы (Swap)</h2>
+<table class="table table-dark table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Источник</th>
+            <th>Цель</th>
+            <th>Сложность</th>
+            <th>Статус</th>
+            <th>Создано</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for swap in swaps %}
+        <tr>
+            <td>{{ swap.id }}</td>
+            <td>{{ swap.source_vehicle_model_id }} / {{ swap.source_component_type }} #{{ swap.source_component_id }}</td>
+            <td>{{ swap.target_component_type }} #{{ swap.target_component_id }}</td>
+            <td>{{ swap.difficulty }}/10</td>
+            <td>{{ swap.status }}</td>
+            <td>{{ swap.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+            <td>
+                {% if swap.status != 'VERIFIED' %}
+                <form method="POST" action="{{ url_for('admin.set_swap_status', id=swap.id) }}" style="display:inline">
+                    <input type="hidden" name="status" value="VERIFIED">
+                    <button type="submit" class="btn btn-sm btn-success">✓</button>
+                </form>
+                {% endif %}
+                {% if swap.status != 'REJECTED' %}
+                <form method="POST" action="{{ url_for('admin.set_swap_status', id=swap.id) }}" style="display:inline">
+                    <input type="hidden" name="status" value="REJECTED">
+                    <button type="submit" class="btn btn-sm btn-danger">✕</button>
+                </form>
+                {% endif %}
+                <form method="POST" action="{{ url_for('admin.delete_swap', id=swap.id) }}" style="display:inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
