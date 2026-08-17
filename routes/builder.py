@@ -152,24 +152,38 @@ def view_swaps(component_type, component_id):
     # Пока просто передадим в шаблон
     return render_template('builder/swaps.html', swaps=swaps, component_type=component_type, component_id=component_id, vehicle=vehicle)
 
-@builder_bp.route('/generate-swap/<component_type>/<int:component_id>')
+@builder_bp.route('/generate-swap/<component_type>/<int:component_id>', methods=['GET', 'POST'])
 def generate_swap(component_type, component_id):
     vehicle = get_vehicle()
     if not vehicle:
         return redirect(url_for('builder.select_vehicle'))
     vehicle_model_id = vehicle['id']
 
-    # Пока для демонстрации будем генерировать свап на двигатель 2JZ-GTE (target_component_id=1)
-    # В будущем здесь будет выбор target из AI или из списка
-    from services.compatibility_engine import generate_swap_and_save
-    swap = generate_swap_and_save(
-        source_vehicle_model_id=vehicle_model_id,
-        source_component_type=component_type,
-        source_component_id=component_id,
-        target_component_type=component_type,
-        target_component_id=1  # предполагаем, что 2JZ-GTE имеет id=1
-    )
-    flash('Свап сгенерирован и сохранён!', 'success')
-    return redirect(url_for('builder.view_swaps', component_type=component_type, component_id=component_id))
+    # Для простоты поддерживаем только двигатели
+    if component_type != 'engine':
+        flash('Пока генерация свапов доступна только для двигателей.', 'info')
+        return redirect(url_for('builder.view_swaps', component_type=component_type, component_id=component_id))
+
+    if request.method == 'POST':
+        target_component_id = request.form.get('target_component_id', type=int)
+        if not target_component_id:
+            flash('Выберите целевой двигатель.', 'danger')
+            return redirect(url_for('builder.generate_swap', component_type=component_type, component_id=component_id))
+
+        from services.compatibility_engine import generate_swap_and_save
+        swap = generate_swap_and_save(
+            source_vehicle_model_id=vehicle_model_id,
+            source_component_type=component_type,
+            source_component_id=component_id,
+            target_component_type=component_type,
+            target_component_id=target_component_id
+        )
+        flash('Свап сгенерирован и сохранён!', 'success')
+        return redirect(url_for('builder.view_swaps', component_type=component_type, component_id=component_id))
+
+    # GET-запрос: отобразить форму выбора
+    from models import Engine
+    engines = Engine.query.all()
+    return render_template('builder/generate_swap.html', engines=engines, component_type=component_type, component_id=component_id, vehicle=vehicle)
 
     return {'components': result}

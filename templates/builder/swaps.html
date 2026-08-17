@@ -12,12 +12,20 @@
                 <h5 class="text-warning">{{ swap.target_component_type }} #{{ swap.target_component_id }}</h5>
                 <p>Сложность: {{ swap.difficulty }}/10</p>
                 <p>Статус: {{ swap.status }}</p>
-                {% if swap.required_modifications %}
-                    <small>Модификации: {{ swap.required_modifications }}</small><br>
-                {% endif %}
-                {% if swap.required_parts %}
-                    <small>Требуемые детали: {{ swap.required_parts }}</small>
-                {% endif %}
+                <small>Модификации: 
+    {% if swap.required_modifications and swap.required_modifications != '[]' %}
+        {{ swap.required_modifications }}
+    {% else %}
+        не указаны
+    {% endif %}
+</small><br>
+<small>Требуемые детали: 
+    {% if swap.required_parts and swap.required_parts != '[]' %}
+        {{ swap.required_parts }}
+    {% else %}
+        не указаны
+    {% endif %}
+</small>
             </div>
         </div>
         {% endfor %}

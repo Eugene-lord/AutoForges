@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Выбор целевого двигателя{% endblock %}
+{% block content %}
+<h2 class="mb-4 text-light">Сгенерировать свап для {{ vehicle.name }}</h2>
+<p class="text-muted">Исходный компонент: {{ component_type }} #{{ component_id }}</p>
+
+{% if engines %}
+<div class="glass-card p-4 col-md-6">
+    <form method="POST">
+        <div class="mb-3">
+            <label for="target_component_id" class="form-label text-light">Выберите целевой двигатель</label>
+            <select name="target_component_id" id="target_component_id" class="form-select bg-dark text-light" required>
+                <option value="">-- Выберите --</option>
+                {% for engine in engines %}
+                <option value="{{ engine.id }}">{{ engine.name }} ({{ engine.engine_code }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-glow">Сгенерировать свап</button>
+        <a href="{{ url_for('builder.view_swaps', component_type=component_type, component_id=component_id) }}" class="btn btn-outline-light ms-2">Отмена</a>
+    </form>
+</div>
+{% else %}
+<p class="text-muted">В базе пока нет двигателей. Добавьте их через админку.</p>
+{% endif %}
+{% endblock %}
