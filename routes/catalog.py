@@ -17,4 +17,6 @@ def model_list(brand_id):
 @catalog_bp.route('/model/<int:model_id>')
 def model_detail(model_id):
     model, engines = get_model_detail(model_id)
-    return render_template('model_detail.html', model=model, engines=engines)
+    title = f"{model.brand.name} {model.name} ({model.generation}) — характеристики и совместимые двигатели"
+    description = f"Автомобиль {model.brand.name} {model.name} {model.generation}. Кузов: {model.body_type}. Годы выпуска: {model.year_start}-{model.year_end}. Смотрите совместимые двигатели и детали на AutoForge."
+    return render_template('model_detail.html', model=model, engines=engines, title=title, description=description)

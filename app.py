@@ -52,6 +52,9 @@ def create_app(config_class=Config):
     from routes.admin import admin_bp
     app.register_blueprint(admin_bp)
 
+    from routes.seo import seo_bp
+    app.register_blueprint(seo_bp)
+
     with app.app_context():
         from seed_data import seed
         seed()
