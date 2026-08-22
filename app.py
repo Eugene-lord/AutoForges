@@ -60,5 +60,21 @@ def create_app(config_class=Config):
         return 'База данных заполнена!'    
 
         # Временный маршрут для тестирования Knowledge Service
-   
+    
+        # Временный маршрут для резервного копирования БД (удалить после использования!)
+    @app.route('/backup-db')
+    def backup_db():
+        import subprocess, os
+        try:
+            # Выполняем pg_dump и возвращаем вывод
+            result = subprocess.run(
+                ['pg_dump', os.environ.get('DATABASE_URL', '')],
+                capture_output=True, text=True, check=True
+            )
+            return f"<pre>{result.stdout}</pre>"
+        except subprocess.CalledProcessError as e:
+            return f"Ошибка pg_dump: {e.stderr}", 500
+        except FileNotFoundError:
+            return "pg_dump не найден на сервере.", 500
+
     return app
