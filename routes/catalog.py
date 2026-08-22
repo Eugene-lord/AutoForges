@@ -6,7 +6,9 @@ catalog_bp = Blueprint('catalog', __name__)
 @catalog_bp.route('/catalog')
 def brand_list():
     brands = get_all_brands()
-    return render_template('catalog_brands.html', brands=brands)
+    title = "Каталог автомобилей | AutoForge"
+    description = "Список марок и моделей автомобилей с возможностью просмотра совместимых двигателей и деталей."
+    return render_template('catalog_brands.html', brands=brands, title=title, description=description)
 
 @catalog_bp.route('/catalog/<int:brand_id>')
 def model_list(brand_id):

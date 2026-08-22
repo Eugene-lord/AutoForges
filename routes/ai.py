@@ -5,7 +5,6 @@ from extensions import limiter
 ai_bp = Blueprint('ai', __name__, url_prefix='/ai')
 
 @ai_bp.route('/', methods=['GET', 'POST'])
-@limiter.limit("20 per hour")
 def index():
     answer = None
     question = None
@@ -13,4 +12,6 @@ def index():
         question = request.form.get('question', '').strip()
         if question:
             answer = ask_deepseek(question)
-    return render_template('ai_assistant.html', answer=answer, question=question)
+    title = "ИИ-помощник | AutoForge"
+    description = "Задайте вопрос об автомобильных свапах, совместимости деталей и модификациях. ИИ-помощник AutoForge."
+    return render_template('ai_assistant.html', answer=answer, question=question, title=title, description=description)
