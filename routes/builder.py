@@ -7,6 +7,7 @@ from services.builder import (
 )
 from services.catalog import get_all_brands, get_models_by_brand, get_brand_by_id
 from models import Swap
+from extensions import limiter
 
 builder_bp = Blueprint('builder', __name__, url_prefix='/builder')
 
@@ -153,6 +154,7 @@ def view_swaps(component_type, component_id):
     return render_template('builder/swaps.html', swaps=swaps, component_type=component_type, component_id=component_id, vehicle=vehicle)
 
 @builder_bp.route('/generate-swap/<component_type>/<int:component_id>', methods=['GET', 'POST'])
+@limiter.limit("10 per hour")
 def generate_swap(component_type, component_id):
     vehicle = get_vehicle()
     if not vehicle:
