@@ -15,6 +15,7 @@
             <td>
                 <a href="{{ url_for('admin.edit_turbo', id=item.id) }}" class="btn btn-outline-light btn-sm">✏️</a>
                 <form action="{{ url_for('admin.delete_turbo', id=item.id) }}" method="POST" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline-danger btn-sm">🗑️</button>
                 </form>
             </td>

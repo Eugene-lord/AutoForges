@@ -7,6 +7,7 @@
 {% if engines %}
 <div class="glass-card p-4 col-md-6">
     <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
             <label for="target_component_id" class="form-label text-light">Выберите целевой двигатель</label>
             <select name="target_component_id" id="target_component_id" class="form-select bg-dark text-light" required>

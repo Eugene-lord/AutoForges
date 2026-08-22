@@ -2,6 +2,7 @@
 {% block admin_content %}
 <h2 class="text-light mb-3">{% if item %}Редактировать{% else %}Добавить{% endif %} двигатель</h2>
 <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="mb-3">
         <label class="form-label text-light">Код двигателя</label>
         <input type="text" name="engine_code" class="form-control bg-dark text-light" value="{{ item.engine_code if item else '' }}" required>

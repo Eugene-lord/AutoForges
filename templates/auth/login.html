@@ -6,6 +6,7 @@
         <div class="glass-card p-4">
             <h2 class="text-light mb-4">Вход</h2>
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="mb-3">
                     <label for="username" class="form-label text-light">Имя пользователя</label>
                     <input type="text" class="form-control bg-dark text-light border-secondary" id="username" name="username" required>

@@ -11,6 +11,7 @@
     </div>
     {% if current_user.is_authenticated %}
         <form method="POST" action="{{ url_for('project.toggle_favorite', project_id=project.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn {% if is_favorited %}btn-outline-danger{% else %}btn-outline-warning{% endif %} btn-sm">
                 {% if is_favorited %}💔 Убрать из избранного{% else %}❤️ В избранное{% endif %}
             </button>
@@ -49,6 +50,7 @@
     <h5 class="text-warning">Комментарии ({{ comments|length }})</h5>
     {% if current_user.is_authenticated %}
         <form method="POST" action="{{ url_for('project.add_comment', project_id=project.id) }}" class="mb-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <textarea class="form-control bg-dark text-light border-secondary mb-2" name="comment_text" rows="2" placeholder="Напишите комментарий..." required></textarea>
             <button type="submit" class="btn btn-glow btn-sm">Отправить</button>
         </form>

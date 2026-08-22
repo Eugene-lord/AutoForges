@@ -4,6 +4,7 @@
 <h2 class="text-light mb-4">Редактирование проекта</h2>
 <div class="glass-card p-4 col-md-6">
     <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
             <label for="name" class="form-label text-light">Название</label>
             <input type="text" class="form-control bg-dark text-light border-secondary" id="name" name="name" value="{{ project.name or '' }}">

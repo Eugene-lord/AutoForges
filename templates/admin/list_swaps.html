@@ -25,17 +25,19 @@
             <td>
                 {% if swap.status != 'VERIFIED' %}
                 <form method="POST" action="{{ url_for('admin.set_swap_status', id=swap.id) }}" style="display:inline">
-                    <input type="hidden" name="status" value="VERIFIED">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-sm btn-success">✓</button>
                 </form>
                 {% endif %}
                 {% if swap.status != 'REJECTED' %}
                 <form method="POST" action="{{ url_for('admin.set_swap_status', id=swap.id) }}" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="status" value="REJECTED">
                     <button type="submit" class="btn btn-sm btn-danger">✕</button>
                 </form>
                 {% endif %}
                 <form method="POST" action="{{ url_for('admin.delete_swap', id=swap.id) }}" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
                 </form>
             </td>

@@ -2,6 +2,7 @@
 {% block admin_content %}
 <h2 class="text-light mb-3">{% if item %}Редактировать{% else %}Добавить{% endif %} совместимость</h2>
 <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="mb-3">
         <label class="form-label text-light">Модель авто</label>
         <select name="vehicle_model_id" class="form-select bg-dark text-light" required>

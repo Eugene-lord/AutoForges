@@ -4,6 +4,7 @@
 <h2 class="text-light mb-4">Добавить автомобиль</h2>
 <div class="glass-card p-4 col-md-6">
     <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
             <label for="brand_id" class="form-label text-light">Марка</label>
             <select class="form-select bg-dark text-light border-secondary" id="brand_id" onchange="loadModels()">

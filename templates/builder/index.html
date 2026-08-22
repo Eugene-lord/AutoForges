@@ -320,6 +320,7 @@
 <div class="glass-card p-4 mt-4">
     <h5 class="text-warning">💾 Сохранить проект</h5>
     <form method="POST" action="{{ url_for('builder.save') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
             <label for="project_name" class="form-label text-light">Название проекта</label>
             <input type="text" class="form-control bg-dark text-light border-secondary" id="project_name" name="project_name" placeholder="Мой проект">
