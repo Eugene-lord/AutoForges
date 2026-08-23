@@ -4,6 +4,7 @@ from extensions import db, migrate, login_manager
 from models import User
 from extensions import db, migrate, login_manager, limiter
 from extensions import db, migrate, login_manager, limiter, csrf
+from flask import Flask, render_template
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -67,5 +68,13 @@ def create_app(config_class=Config):
         return 'База данных заполнена!'    
 
         # Временный маршрут для тестирования Knowledge Service
+    
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return render_template('404.html'), 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        return render_template('500.html'), 500
 
     return app
