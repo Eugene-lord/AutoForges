@@ -12,6 +12,8 @@ class Brand(db.Model):
     logo_url = db.Column(db.String(300), nullable=True)
     models = db.relationship('Model', backref='brand', lazy='dynamic')
 
+    __table_args__ = (db.Index('ix_brand_name', 'name'),)
+
 class Model(db.Model):
     __tablename__ = 'models'
     id = db.Column(db.Integer, primary_key=True)
@@ -24,6 +26,8 @@ class Model(db.Model):
     description = db.Column(db.Text, nullable=True)
     engines = db.relationship('Engine', backref='model', lazy='dynamic')
 
+    __table_args__ = (db.Index('ix_model_name', 'name'),)
+
 class Engine(db.Model):
     __tablename__ = 'engines'
     id = db.Column(db.Integer, primary_key=True)
@@ -35,6 +39,8 @@ class Engine(db.Model):
     fuel_type = db.Column(db.String(30), nullable=True)
     configuration = db.Column(db.String(50), nullable=True)
     model_id = db.Column(db.Integer, db.ForeignKey('models.id'), nullable=True)
+
+    __table_args__ = (db.Index('ix_engine_code', 'engine_code'), db.Index('ix_engine_name', 'name'))
 
 class Transmission(db.Model):
     __tablename__ = 'transmissions'
@@ -149,6 +155,9 @@ class Compatibility(db.Model):
 
     __table_args__ = (
         db.UniqueConstraint('vehicle_model_id', 'component_type', 'component_id', name='uix_comp'),
+        db.Index('ix_compat_vehicle_model_id', 'vehicle_model_id'),
+        db.Index('ix_compat_component_type', 'component_type'),
+        db.Index('ix_compat_component_id', 'component_id'),
     )
 
 class User(UserMixin, db.Model):
@@ -292,3 +301,11 @@ class Swap(db.Model):
 
     # Связь с моделью автомобиля (для удобства)
     source_vehicle = db.relationship('Model', foreign_keys=[source_vehicle_model_id], backref='source_swaps')
+
+    __table_args__ = (
+        db.Index('ix_swap_source_vehicle_model_id', 'source_vehicle_model_id'),
+        db.Index('ix_swap_source_component_type', 'source_component_type'),
+        db.Index('ix_swap_source_component_id', 'source_component_id'),
+        db.Index('ix_swap_target_component_type', 'target_component_type'),
+        db.Index('ix_swap_target_component_id', 'target_component_id'),
+    )
