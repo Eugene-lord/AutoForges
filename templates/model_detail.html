@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
-{% extends 'base.html' %}
 {% block title %}{{ title }}{% endblock %}
 {% block description %}{{ description }}{% endblock %}
-{% block title %}{{ model.brand.name }} {{ model.name }}{% endblock %}
 {% block content %}
 <h2 class="text-light">{{ model.brand.name }} {{ model.name }} <small class="text-muted">{{ model.generation }}</small></h2>
 <p class="text-muted">{{ model.body_type }} | {{ model.year_start }}–{{ model.year_end }}</p>
