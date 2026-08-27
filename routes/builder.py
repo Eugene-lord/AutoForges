@@ -8,6 +8,8 @@ from services.builder import (
 from services.catalog import get_all_brands, get_models_by_brand, get_brand_by_id
 from models import Swap
 from extensions import limiter
+from datetime import datetime
+from extensions import csrf
 
 builder_bp = Blueprint('builder', __name__, url_prefix='/builder')
 
@@ -61,6 +63,53 @@ def select_vehicle():
                            brands=brands,
                            models=models,
                            selected_brand=selected_brand)
+
+@builder_bp.route('/select-brand', methods=['GET', 'POST'])
+def select_brand():
+    from models import Brand, KnowledgeItem, db
+    from services.knowledge_service import generate_brand_models
+    from datetime import datetime
+    import json
+
+    generated_models = None
+    new_brand_name = None
+
+    if request.method == 'POST':
+        brand_name = request.form.get('brand_name', '').strip()
+        if brand_name:
+            existing_brand = Brand.query.filter_by(name=brand_name).first()
+            if existing_brand:
+                return redirect(url_for('builder.select_vehicle', brand_id=existing_brand.id))
+            else:
+                try:
+                    data = generate_brand_models(brand_name)
+                    models = data.get('models', [])
+                    item = KnowledgeItem(
+                        knowledge_type='brand_models',
+                        source='ai',
+                        confidence=0.6,
+                        risk_level='LOW',
+                        status='AI_GENERATED',
+                        data_json=json.dumps({'brand': brand_name, 'models': models}, ensure_ascii=False),
+                        created_at=datetime.utcnow(),
+                        updated_at=datetime.utcnow()
+                    )
+                    db.session.add(item)
+                    db.session.commit()
+                    generated_models = models
+                    new_brand_name = brand_name
+                except Exception as e:
+                    db.session.rollback()
+                    print("ERROR in select_brand:", e)  # ← вывод в терминал
+                    flash(f'Ошибка: {e}', 'danger')
+        else:
+            flash('Введите название бренда.', 'warning')
+
+    brands = Brand.query.order_by(Brand.name).all()
+    return render_template('builder/select_brand.html',
+                           brands=brands,
+                           generated_models=generated_models,
+                           new_brand_name=new_brand_name)
 
 @builder_bp.route('/set-vehicle/<int:model_id>')
 def set_vehicle_route(model_id):

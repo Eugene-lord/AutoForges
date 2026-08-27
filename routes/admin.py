@@ -6,6 +6,7 @@ from models import (db, Brand, Model, Engine, Transmission, Differential,
 from functools import wraps
 from datetime import datetime
 from models import KnowledgeItem, Swap
+import json
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -1000,3 +1001,39 @@ def delete_swap(id):
     db.session.commit()
     flash('Свап удалён.', 'info')
     return redirect(url_for('admin.list_swaps'))
+
+@admin_bp.route('/knowledge-items/<int:id>/approve', methods=['POST'])
+@admin_required
+def approve_knowledge_item(id):
+    item = KnowledgeItem.query.get_or_404(id)
+    if item.knowledge_type != 'brand_models':
+        flash('Одобрение поддерживается только для типа brand_models', 'warning')
+        return redirect(url_for('admin.list_knowledge_items'))
+
+    data = json.loads(item.data_json)
+    brand_name = data.get('brand')
+    models = data.get('models', [])
+
+    if not brand_name:
+        flash('В данных нет названия бренда', 'danger')
+        return redirect(url_for('admin.list_knowledge_items'))
+
+    # Создаём бренд, если его ещё нет
+    brand = Brand.query.filter_by(name=brand_name).first()
+    if not brand:
+        brand = Brand(name=brand_name)
+        db.session.add(brand)
+        db.session.flush()
+
+    # Создаём модели
+    for model_name in models:
+        existing_model = Model.query.filter_by(brand_id=brand.id, name=model_name).first()
+        if not existing_model:
+            db.session.add(Model(brand_id=brand.id, name=model_name, generation=''))
+
+    item.status = 'VERIFIED'
+    item.verified_by = current_user.id
+    item.verified_at = datetime.utcnow()
+    db.session.commit()
+    flash('Бренд и модели созданы, знание подтверждено.', 'success')
+    return redirect(url_for('admin.list_knowledge_items'))

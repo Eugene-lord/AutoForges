@@ -5,6 +5,7 @@ from models import User
 from extensions import db, migrate, login_manager, limiter
 from extensions import db, migrate, login_manager, limiter, csrf
 from flask import Flask, render_template
+from flask import Flask, request
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -76,5 +77,6 @@ def create_app(config_class=Config):
     @app.errorhandler(500)
     def internal_error(error):
         return render_template('500.html'), 500
+
 
     return app

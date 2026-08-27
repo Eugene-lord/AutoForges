@@ -2,8 +2,17 @@
 {% block title %}Выбор бренда — Конструктор{% endblock %}
 {% block content %}
 <h2 class="mb-4 text-light">Выбор бренда</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 
-<!-- Существующие бренды -->
 <h5 class="text-warning mb-3">Бренды в базе</h5>
 {% if brands %}
     <div class="row">
@@ -22,20 +31,18 @@
     <p class="text-muted">Пока нет брендов. Введите свой ниже.</p>
 {% endif %}
 
-<!-- Форма для нового бренда -->
 <div class="glass-card p-4 mt-4">
     <h5 class="text-warning">Ввести новый бренд</h5>
     <form method="POST">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="mb-3">
-            <label for="brand_name" class="form-label text-light">Название бренда</label>
-            <input type="text" class="form-control bg-dark text-light border-secondary" id="brand_name" name="brand_name" placeholder="Например, Toyota">
-        </div>
-        <button type="submit" class="btn btn-glow">Сгенерировать модели через ИИ</button>
-    </form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3">
+        <label for="brand_name" class="form-label text-light">Название бренда</label>
+        <input type="text" class="form-control bg-dark text-light border-secondary" id="brand_name" name="brand_name" placeholder="Например, Toyota">
+    </div>
+    <button type="submit" class="btn btn-glow">Сгенерировать модели через ИИ</button>
+</form>
 </div>
 
-<!-- Результат генерации -->
 {% if generated_models %}
     <div class="glass-card p-4 mt-4 border-warning">
         <h5 class="text-warning">AI-сгенерированные модели для {{ new_brand_name }} <span class="badge bg-danger">ожидает проверки</span></h5>

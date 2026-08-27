@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from services.ai_provider import DeepSeekProvider
 from models import db, KnowledgeItem
+from services.ai_provider import FallbackProvider
 
 # Простая схема для проверки JSON (можно расширить)
 JSON_SCHEMA = {
@@ -59,3 +60,33 @@ def generate_knowledge(prompt: str, knowledge_type: str = "swap") -> KnowledgeIt
     db.session.add(item)
     db.session.commit()
     return item
+
+def generate_brand_models(brand_name: str) -> dict:
+    """
+    Генерирует список моделей для заданного бренда через AI (Mock).
+    Если AI не вернул модели, используем временную заглушку.
+    """
+    provider = FallbackProvider()
+    schema = {
+        "type": "object",
+        "properties": {
+            "models": {"type": "array", "items": {"type": "string"}}
+        },
+        "required": ["models"]
+    }
+    prompt = f"Перечисли популярные модели автомобилей марки {brand_name}."
+    try:
+        data = provider.generate_structured_knowledge(prompt, schema)
+        if isinstance(data, dict) and 'models' in data and data['models']:
+            return data
+    except Exception as e:
+        print(f"Ошибка генерации моделей: {e}")
+    
+    # Временная заглушка, чтобы проверить UI и сохранение
+    return {
+        "models": [
+            f"{brand_name} Model A",
+            f"{brand_name} Model B",
+            f"{brand_name} Model C"
+        ]
+    }
