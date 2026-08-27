@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% block title %}{{ title }}{% endblock %}
-{% block description %}{{ description }}{% endblock %}
 {% block content %}
 <h2 class="text-light mb-4">Статьи в категории «{{ category }}»</h2>
 <a href="{{ url_for('knowledge.index') }}" class="btn btn-outline-light btn-sm mb-3">← Все категории</a>
