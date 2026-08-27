@@ -49,6 +49,8 @@ class Transmission(db.Model):
     type = db.Column(db.String(50))
     gears = db.Column(db.Integer)
 
+    __table_args__ = (db.Index('ix_transmissions_name', 'name'),)
+
 class Differential(db.Model):
     __tablename__ = 'differentials'
     id = db.Column(db.Integer, primary_key=True)
@@ -56,11 +58,15 @@ class Differential(db.Model):
     type = db.Column(db.String(50))
     ratio = db.Column(db.Float)
 
+    __table_args__ = (db.Index('ix_differentials_name', 'name'),)
+
 class Suspension(db.Model):
     __tablename__ = 'suspensions'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     type = db.Column(db.String(50))
+
+    __table_args__ = (db.Index('ix_suspensions_name', 'name'),)
 
 class Brake(db.Model):
     __tablename__ = 'brakes'
@@ -69,11 +75,15 @@ class Brake(db.Model):
     type = db.Column(db.String(50))
     size = db.Column(db.String(50))
 
+    __table_args__ = (db.Index('ix_brakes_name', 'name'),)
+
 class Cooling(db.Model):
     __tablename__ = 'coolings'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     type = db.Column(db.String(50))
+
+    __table_args__ = (db.Index('ix_coolings_name', 'name'),)
 
 class Electronics(db.Model):
     __tablename__ = 'electronics'
@@ -81,11 +91,15 @@ class Electronics(db.Model):
     name = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.Text)
 
+    __table_args__ = (db.Index('ix_electronics_name', 'name'),)
+
 class ECU(db.Model):
     __tablename__ = 'ecus'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     type = db.Column(db.String(50))
+
+    __table_args__ = (db.Index('ix_ecus_name', 'name'),)
 
 class Turbo(db.Model):
     __tablename__ = 'turbos'
@@ -93,17 +107,23 @@ class Turbo(db.Model):
     name = db.Column(db.String(100), nullable=False, unique=True)
     pressure = db.Column(db.String(50))
 
+    __table_args__ = (db.Index('ix_turbos_name', 'name'),)
+
 class Intercooler(db.Model):
     __tablename__ = 'intercoolers'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     type = db.Column(db.String(50))
 
+    __table_args__ = (db.Index('ix_intercoolers_name', 'name'),)
+
 class Exhaust(db.Model):
     __tablename__ = 'exhausts'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     material = db.Column(db.String(50))
+
+    __table_args__ = (db.Index('ix_exhausts_name', 'name'),)
 
 # --- Электромобильные компоненты ---
 class ElectricMotor(db.Model):
@@ -114,6 +134,8 @@ class ElectricMotor(db.Model):
     torque_nm = db.Column(db.Integer, nullable=True)
     motor_type = db.Column(db.String(50), nullable=True)  # синхронный, асинхронный
 
+    __table_args__ = (db.Index('ix_electric_motors_name', 'name'),)
+
 class Battery(db.Model):
     __tablename__ = 'batteries'
     id = db.Column(db.Integer, primary_key=True)
@@ -122,12 +144,16 @@ class Battery(db.Model):
     voltage = db.Column(db.Float, nullable=True)
     battery_type = db.Column(db.String(50), nullable=True)  # Li-Ion, LiFePO4
 
+    __table_args__ = (db.Index('ix_batteries_name', 'name'),)
+
 class Inverter(db.Model):
     __tablename__ = 'inverters'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     power_kw = db.Column(db.Float, nullable=True)
     inverter_type = db.Column(db.String(50), nullable=True)
+
+    __table_args__ = (db.Index('ix_inverters_name', 'name'),)
 # --------------------------------
 
 class Compatibility(db.Model):
