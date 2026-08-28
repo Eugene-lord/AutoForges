@@ -78,5 +78,15 @@ def create_app(config_class=Config):
     def internal_error(error):
         return render_template('500.html'), 500
 
+    # Временный маршрут для смены пароля админа (удалить после использования!)
+    @app.route('/change-password-admin')
+    def change_admin_password():
+        from models import db, User
+        admin = User.query.filter_by(username='admin').first()
+        if not admin:
+            return 'Ошибка: пользователь admin не найден!'
+        admin.set_password('Evgenij97#')
+        db.session.commit()
+        return 'Пароль администратора успешно изменён!'
 
     return app
