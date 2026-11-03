@@ -40,6 +40,13 @@ class Engine(db.Model):
     configuration = db.Column(db.String(50), nullable=True)
     model_id = db.Column(db.Integer, db.ForeignKey('models.id'), nullable=True)
 
+    # Метаданные (новые поля)
+    source = db.Column(db.String(50), default='manual')  # manual, seed, ai, user
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
     __table_args__ = (db.Index('ix_engine_code', 'engine_code'), db.Index('ix_engine_name', 'name'))
 
 class Transmission(db.Model):
