@@ -1,5 +1,5 @@
 from extensions import db
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -44,8 +44,8 @@ class Engine(db.Model):
     source = db.Column(db.String(50), default='manual')  # manual, seed, ai, user
     verified_by = db.Column(db.Integer, nullable=True)
     verified_at = db.Column(db.DateTime, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
     __table_args__ = (db.Index('ix_engine_code', 'engine_code'), db.Index('ix_engine_name', 'name'))
 
@@ -55,8 +55,12 @@ class Transmission(db.Model):
     name = db.Column(db.String(100), nullable=False, unique=True)
     type = db.Column(db.String(50))
     gears = db.Column(db.Integer)
-
-    __table_args__ = (db.Index('ix_transmissions_name', 'name'),)
+    # Метаданные
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 class Differential(db.Model):
     __tablename__ = 'differentials'
@@ -64,16 +68,24 @@ class Differential(db.Model):
     name = db.Column(db.String(100), nullable=False, unique=True)
     type = db.Column(db.String(50))
     ratio = db.Column(db.Float)
-
-    __table_args__ = (db.Index('ix_differentials_name', 'name'),)
+    # Метаданные
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 class Suspension(db.Model):
     __tablename__ = 'suspensions'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     type = db.Column(db.String(50))
-
-    __table_args__ = (db.Index('ix_suspensions_name', 'name'),)
+    # Метаданные
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 class Brake(db.Model):
     __tablename__ = 'brakes'
@@ -81,56 +93,84 @@ class Brake(db.Model):
     name = db.Column(db.String(100), nullable=False, unique=True)
     type = db.Column(db.String(50))
     size = db.Column(db.String(50))
-
-    __table_args__ = (db.Index('ix_brakes_name', 'name'),)
+    # Метаданные
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 class Cooling(db.Model):
     __tablename__ = 'coolings'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     type = db.Column(db.String(50))
-
-    __table_args__ = (db.Index('ix_coolings_name', 'name'),)
+    # Метаданные
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 class Electronics(db.Model):
     __tablename__ = 'electronics'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.Text)
-
-    __table_args__ = (db.Index('ix_electronics_name', 'name'),)
+    # Метаданные
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 class ECU(db.Model):
     __tablename__ = 'ecus'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     type = db.Column(db.String(50))
-
-    __table_args__ = (db.Index('ix_ecus_name', 'name'),)
+    # Метаданные
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 class Turbo(db.Model):
     __tablename__ = 'turbos'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     pressure = db.Column(db.String(50))
-
-    __table_args__ = (db.Index('ix_turbos_name', 'name'),)
+    # Метаданные
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 class Intercooler(db.Model):
     __tablename__ = 'intercoolers'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     type = db.Column(db.String(50))
-
-    __table_args__ = (db.Index('ix_intercoolers_name', 'name'),)
+    # Метаданные
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 class Exhaust(db.Model):
     __tablename__ = 'exhausts'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     material = db.Column(db.String(50))
-
-    __table_args__ = (db.Index('ix_exhausts_name', 'name'),)
+    # Метаданные
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 # --- Электромобильные компоненты ---
 class ElectricMotor(db.Model):
@@ -183,8 +223,8 @@ class Compatibility(db.Model):
     risk_level = db.Column(db.String(10), default='LOW')  # LOW, MEDIUM, HIGH
     verified_by = db.Column(db.Integer, nullable=True)    # ID пользователя-администратора
     verified_at = db.Column(db.DateTime, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
     __table_args__ = (
         db.UniqueConstraint('vehicle_model_id', 'component_type', 'component_id', name='uix_comp'),
@@ -219,7 +259,7 @@ class SwapProject(db.Model):
     configuration_json = db.Column(db.Text, nullable=False)
     total_cost = db.Column(db.Float, nullable=True)
     difficulty = db.Column(db.Integer, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     is_public = db.Column(db.Boolean, default=False)
     is_approved = db.Column(db.Boolean, default=True)
 
@@ -232,7 +272,7 @@ class Comment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('swap_projects.id'), nullable=False)
     text = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     user = db.relationship('User', backref='comments')
     project = db.relationship('SwapProject', backref='comments')
@@ -242,7 +282,7 @@ class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('swap_projects.id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     user = db.relationship('User', backref='favorites')
     project = db.relationship('SwapProject', backref='favorited_by')
@@ -258,7 +298,7 @@ class Article(db.Model):
     category = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     tags = db.Column(db.String(300), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
 class Shop(db.Model):
     __tablename__ = 'shops'
@@ -291,6 +331,35 @@ class UserCar(db.Model):
     user = db.relationship('User', backref='cars')
     model = db.relationship('Model')
 
+class Connection(db.Model):
+    __tablename__ = 'connections'
+    id = db.Column(db.Integer, primary_key=True)
+    vehicle_model_id = db.Column(db.Integer, db.ForeignKey('models.id'), nullable=False)
+
+    source_part_id = db.Column(db.String(50), nullable=False)
+    target_part_id = db.Column(db.String(50), nullable=False)
+
+    connection_type = db.Column(db.String(30), nullable=False)
+    label = db.Column(db.String(100), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    pinout_json = db.Column(db.Text, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+
+    vehicle = db.relationship('Model', backref='connections')
+
+    __table_args__ = (
+        db.Index('ix_conn_vehicle', 'vehicle_model_id'),
+        db.Index('ix_conn_source', 'source_part_id'),
+        db.Index('ix_conn_target', 'target_part_id'),
+        db.Index('ix_conn_type', 'connection_type'),
+    )    
+
 class KnowledgeItem(db.Model):
     __tablename__ = 'knowledge_items'
     id = db.Column(db.Integer, primary_key=True)
@@ -300,8 +369,8 @@ class KnowledgeItem(db.Model):
     risk_level = db.Column(db.String(10), default='LOW')        # LOW, MEDIUM, HIGH
     status = db.Column(db.String(20), default='AI_GENERATED')   # AI_GENERATED, REVIEW_REQUIRED, VERIFIED, REJECTED
     data_json = db.Column(db.Text, nullable=True)               # JSON-строка с содержимым
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
     verified_by = db.Column(db.Integer, nullable=True)          # ID администратора
     verified_at = db.Column(db.DateTime, nullable=True)
 
@@ -329,8 +398,8 @@ class Swap(db.Model):
     risk_level = db.Column(db.String(10), default='LOW')
     verified_by = db.Column(db.Integer, nullable=True)
     verified_at = db.Column(db.DateTime, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
     # Связь с моделью автомобиля (для удобства)
     source_vehicle = db.relationship('Model', foreign_keys=[source_vehicle_model_id], backref='source_swaps')
@@ -342,3 +411,138 @@ class Swap(db.Model):
         db.Index('ix_swap_target_component_type', 'target_component_type'),
         db.Index('ix_swap_target_component_id', 'target_component_id'),
     )
+# ========== ИИ-ИНФРАСТРУКТУРА: новые модели ==========
+
+class Generation(db.Model):
+    __tablename__ = 'generations'
+    id = db.Column(db.Integer, primary_key=True)
+    model_id = db.Column(db.Integer, db.ForeignKey('models.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    year_start = db.Column(db.Integer, nullable=True)
+    year_end = db.Column(db.Integer, nullable=True)
+    body_types = db.Column(db.String(200), nullable=True)
+    markets = db.Column(db.String(200), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+
+    model = db.relationship('Model', backref='generations')
+
+    __table_args__ = (
+        db.Index('ix_generation_model', 'model_id'),
+    )
+
+
+class ComponentVariant(db.Model):
+    __tablename__ = 'component_variants'
+    id = db.Column(db.Integer, primary_key=True)
+    component_type = db.Column(db.String(50), nullable=False)
+    component_id = db.Column(db.Integer, nullable=False)
+    variant_code = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(200), nullable=True)
+    market = db.Column(db.String(50), nullable=True)
+    year_start = db.Column(db.Integer, nullable=True)
+    year_end = db.Column(db.Integer, nullable=True)
+    specs_json = db.Column(db.Text, nullable=True)
+    features = db.Column(db.Text, nullable=True)
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+
+    __table_args__ = (
+        db.UniqueConstraint('component_type', 'component_id', 'variant_code', name='uix_variant'),
+        db.Index('ix_variant_component', 'component_type', 'component_id'),
+    )
+
+
+class Application(db.Model):
+    __tablename__ = 'applications'
+    id = db.Column(db.Integer, primary_key=True)
+    vehicle_model_id = db.Column(db.Integer, db.ForeignKey('models.id'), nullable=False)
+    generation_id = db.Column(db.Integer, db.ForeignKey('generations.id'), nullable=True)
+    component_type = db.Column(db.String(50), nullable=False)
+    component_id = db.Column(db.Integer, nullable=False)
+    variant_id = db.Column(db.Integer, db.ForeignKey('component_variants.id'), nullable=True)
+    application_type = db.Column(db.String(30), nullable=False)
+    condition = db.Column(db.Text, nullable=True)
+    source = db.Column(db.String(50), default='manual')
+    verified_by = db.Column(db.Integer, nullable=True)
+    verified_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+
+    vehicle_model = db.relationship('Model', backref='applications')
+    generation = db.relationship('Generation', backref='applications')
+    variant = db.relationship('ComponentVariant', backref='applications')
+
+    __table_args__ = (
+        db.UniqueConstraint('vehicle_model_id', 'component_type', 'component_id',
+                            'variant_id', 'application_type', name='uix_application'),
+        db.Index('ix_app_vehicle', 'vehicle_model_id'),
+        db.Index('ix_app_component', 'component_type', 'component_id'),
+    )
+
+
+class Source(db.Model):
+    __tablename__ = 'sources'
+    id = db.Column(db.Integer, primary_key=True)
+    source_type = db.Column(db.String(30), nullable=False)
+    url = db.Column(db.String(500), nullable=True)
+    title = db.Column(db.String(200), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    reliability = db.Column(db.String(20), default='medium')
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+
+class SourceEvidence(db.Model):
+    __tablename__ = 'source_evidence'
+    id = db.Column(db.Integer, primary_key=True)
+    source_id = db.Column(db.Integer, db.ForeignKey('sources.id'), nullable=False)
+    entity_type = db.Column(db.String(50), nullable=False)
+    entity_id = db.Column(db.Integer, nullable=False)
+    fact = db.Column(db.Text, nullable=True)
+    confidence = db.Column(db.Float, default=0.5)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+    source = db.relationship('Source', backref='evidences')
+
+    __table_args__ = (
+        db.Index('ix_evidence_entity', 'entity_type', 'entity_id'),
+    )
+
+
+class CatalogCoverage(db.Model):
+    __tablename__ = 'catalog_coverage'
+    id = db.Column(db.Integer, primary_key=True)
+    entity_type = db.Column(db.String(50), nullable=False)
+    entity_id = db.Column(db.Integer, nullable=False)
+    level = db.Column(db.String(20), nullable=False)
+    details_json = db.Column(db.Text, nullable=True)
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+
+    __table_args__ = (
+        db.UniqueConstraint('entity_type', 'entity_id', name='uix_coverage'),
+    )
+
+
+class GenerationJob(db.Model):
+    __tablename__ = 'generation_jobs'
+    id = db.Column(db.Integer, primary_key=True)
+    job_type = db.Column(db.String(50), nullable=False)
+    params_json = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(20), default='pending')
+    result_json = db.Column(db.Text, nullable=True)
+    error = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    started_at = db.Column(db.DateTime, nullable=True)
+    finished_at = db.Column(db.DateTime, nullable=True)
+
+    __table_args__ = (
+        db.Index('ix_job_status', 'status'),
+        db.Index('ix_job_type', 'job_type'),
+    )    

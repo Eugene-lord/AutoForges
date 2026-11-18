@@ -84,3 +84,64 @@ body.dark-theme {
     transition: fill 0.2s, stroke 0.2s;
     pointer-events: all;
 }
+/* Аккордеон на <details> — работает для любых details */
+details > summary {
+    list-style: none;
+    outline: none;
+    cursor: pointer;
+}
+details > summary::-webkit-details-marker {
+    display: none;
+}
+details > summary::before {
+    content: "▶ ";
+    display: inline-block;
+    margin-right: 8px;
+    color: #ffa726;
+    transition: transform 0.2s;
+    font-size: 0.75rem;
+}
+details[open] > summary::before {
+    content: "▼ ";
+}
+details > summary:hover {
+    color: #ffa726;
+}
+.connection-line {
+    stroke: rgba(255, 255, 255, 0.15);
+    stroke-width: 1.5;
+    fill: none;
+    transition: stroke 0.2s, stroke-width 0.2s;
+}
+.connection-line.connection-mechanical { stroke: rgba(80, 200, 120, 0.6); stroke-width: 2; }
+.connection-line.connection-electrical { stroke: rgba(255, 200, 0, 0.6); stroke-dasharray: 4,2; }
+.connection-line.connection-hydraulic  { stroke: rgba(80, 150, 255, 0.6); }
+.connection-line.connection-fuel       { stroke: rgba(255, 100, 100, 0.6); }
+.connection-line.connection-cooling    { stroke: rgba(100, 200, 255, 0.6); stroke-dasharray: 3,3; }
+.connection-line.connection-air        { stroke: rgba(200, 200, 255, 0.6); stroke-dasharray: 2,4; }
+.connection-line.connection-exhaust    { stroke: rgba(150, 150, 150, 0.7); stroke-width: 3; }
+.connection-line.connection-control    { stroke: rgba(255, 100, 255, 0.6); stroke-dasharray: 5,3; }
+.connection-line.highlight { stroke: #ffa726; stroke-width: 3; }
+.connection-line {
+    stroke: rgba(255, 255, 255, 0.15);
+    stroke-width: 1.5;
+    fill: none;
+    transition: stroke 0.2s, stroke-width 0.2s;
+    pointer-events: stroke;   /* клик только по линии, не по заливке */
+    stroke-linecap: round;
+}
+.connection-line:hover {
+    stroke-width: 4;          /* при наведении линия толще — легче кликнуть */
+    stroke: #ffa726;
+}
+.connection-hitbox {
+    stroke: transparent;
+    stroke-width: 12;
+    fill: none;
+    pointer-events: stroke;
+    cursor: pointer;
+}
+.connection-hitbox:hover + .connection-line {
+    stroke-width: 4;
+    stroke: #ffa726;
+}

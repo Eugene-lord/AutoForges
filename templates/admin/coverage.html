@@ -1,0 +1,38 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_content %}
+<h2 class="text-light mb-3">📊 Полнота каталога</h2>
+<p class="text-muted small">Уровень заполнения компонентов для каждой модели.</p>
+<table class="table table-dark table-striped">
+    <thead>
+        <tr>
+            <th>Бренд</th>
+            <th>Модель</th>
+            <th>Уровень</th>
+            <th>Детали</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in rows %}
+        <tr>
+            <td>{{ r.brand }}</td>
+            <td>{{ r.model }}</td>
+            <td>
+                <span class="badge 
+                    {% if r.level == 'full' %}bg-success
+                    {% elif r.level == 'partial' %}bg-warning text-dark
+                    {% elif r.level == 'empty' %}bg-secondary
+                    {% else %}bg-danger{% endif %}">
+                    {{ r.level }}
+                </span>
+            </td>
+            <td><small class="text-muted">{{ r.details[:150] }}...</small></td>
+            <td>
+                <a href="{{ url_for('catalog.model_detail', model_id=r.model_id) }}" 
+                   target="_blank" class="btn btn-outline-light btn-sm">👁</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

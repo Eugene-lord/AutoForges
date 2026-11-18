@@ -11,6 +11,35 @@
         <label class="form-label text-light">Тип</label>
         <input type="text" name="type" class="form-control bg-dark text-light" value="{{ item.type if item else '' }}">
     </div>
+        <hr class="border-secondary my-4">
+    <h5 class="text-warning mb-3">Метаданные</h5>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="source" class="form-label text-light">Источник</label>
+            <select name="source" id="source" class="form-select bg-dark text-light border-secondary">
+                <option value="manual" {% if item and item.source == 'manual' %}selected{% endif %}>manual (вручную)</option>
+                <option value="seed" {% if item and item.source == 'seed' %}selected{% endif %}>seed (из скрипта)</option>
+                <option value="ai" {% if item and item.source == 'ai' %}selected{% endif %}>ai (сгенерировано ИИ)</option>
+                <option value="user" {% if item and item.source == 'user' %}selected{% endif %}>user (предложено пользователем)</option>
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="form-check mt-4">
+                <input type="checkbox" class="form-check-input bg-dark border-secondary" 
+                       id="is_verified" name="is_verified"
+                       {% if item and item.verified_by %}checked{% endif %}>
+                <label class="form-check-label text-light" for="is_verified">
+                    Проверено администратором
+                </label>
+            </div>
+            {% if item and item.verified_by %}
+                <small class="text-muted d-block">
+                    Проверено: {{ item.verified_at.strftime('%d.%m.%Y %H:%M') if item.verified_at else '—' }}
+                </small>
+            {% endif %}
+        </div>
+    </div>
     <button type="submit" class="btn btn-glow">Сохранить</button>
     <a href="{{ url_for('admin.list_intercoolers') }}" class="btn btn-outline-light">Отмена</a>
 </form>

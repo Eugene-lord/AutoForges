@@ -1,42 +1,48 @@
 {% extends 'admin/base_admin.html' %}
 {% block admin_content %}
 <h2 class="text-light mb-3">Свапы (Swap)</h2>
+<a href="{{ url_for('admin.new_swap') }}" class="btn btn-glow btn-sm mb-3">+ Добавить свап</a>
 <table class="table table-dark table-striped">
     <thead>
         <tr>
             <th>ID</th>
-            <th>Источник</th>
-            <th>Цель</th>
+            <th>Автомобиль</th>
+            <th>Тип</th>
+            <th>Из → В</th>
             <th>Сложность</th>
             <th>Статус</th>
-            <th>Создано</th>
             <th>Действия</th>
         </tr>
     </thead>
     <tbody>
-        {% for swap in swaps %}
+        {% for e in enriched %}
+        {% set s = e.swap %}
         <tr>
-            <td>{{ swap.id }}</td>
-            <td>{{ swap.source_vehicle_model_id }} / {{ swap.source_component_type }} #{{ swap.source_component_id }}</td>
-            <td>{{ swap.target_component_type }} #{{ swap.target_component_id }}</td>
-            <td>{{ swap.difficulty }}/10</td>
-            <td>{{ swap.status }}</td>
-            <td>{{ swap.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+            <td>{{ s.id }}</td>
+            <td>model_id={{ s.source_vehicle_model_id }}</td>
+            <td>{{ s.source_component_type }}</td>
             <td>
-                {% if swap.status != 'VERIFIED' %}
-                <form method="POST" action="{{ url_for('admin.set_swap_status', id=swap.id) }}" style="display:inline">
+                <strong>{{ e.src_name }}</strong> → <strong>{{ e.tgt_name }}</strong>
+            </td>
+            <td>{{ s.difficulty }}/10</td>
+            <td>{{ s.status }}</td>
+            <td>
+                <a href="{{ url_for('admin.edit_swap', id=s.id) }}" class="btn btn-outline-light btn-sm">✏️</a>
+                {% if s.status != 'VERIFIED' %}
+                <form method="POST" action="{{ url_for('admin.set_swap_status', id=s.id) }}" style="display:inline">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="VERIFIED">
                     <button type="submit" class="btn btn-sm btn-success">✓</button>
                 </form>
                 {% endif %}
-                {% if swap.status != 'REJECTED' %}
-                <form method="POST" action="{{ url_for('admin.set_swap_status', id=swap.id) }}" style="display:inline">
+                {% if s.status != 'REJECTED' %}
+                <form method="POST" action="{{ url_for('admin.set_swap_status', id=s.id) }}" style="display:inline">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="status" value="REJECTED">
                     <button type="submit" class="btn btn-sm btn-danger">✕</button>
                 </form>
                 {% endif %}
-                <form method="POST" action="{{ url_for('admin.delete_swap', id=swap.id) }}" style="display:inline">
+                <form method="POST" action="{{ url_for('admin.delete_swap', id=s.id) }}" style="display:inline">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
                 </form>

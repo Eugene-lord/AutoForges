@@ -8,8 +8,12 @@ from services.builder import (
 from services.catalog import get_all_brands, get_models_by_brand, get_brand_by_id
 from models import Swap
 from extensions import limiter
-from datetime import datetime
+from datetime import datetime, timezone
 from extensions import csrf
+from flask import jsonify, current_app
+from models import Brand, Model, Generation, GenerationJob
+from services.generation_service import COMPONENT_MODELS
+from services.job_runner import enqueue_job
 
 builder_bp = Blueprint('builder', __name__, url_prefix='/builder')
 
@@ -21,11 +25,30 @@ BUILDER_STEPS = ['vehicle', 'engine', 'transmission', 'differential',
 def ensure_builder_session():
     init_builder()
 
+# Координаты узлов на схеме (центры зон) — должны совпадать с SVG
+PART_POSITIONS = {
+    'engine':        {'x': 240, 'y': 200},
+    'transmission':  {'x': 347, 'y': 200},
+    'differential':  {'x': 590, 'y': 200},
+    'cooling':       {'x': 127, 'y': 200},
+    'intercooler':   {'x': 90,  'y': 200},
+    'turbo':         {'x': 220, 'y': 150},
+    'ecu':           {'x': 407, 'y': 142},
+    'electronics':   {'x': 685, 'y': 165},
+    'exhaust':       {'x': 500, 'y': 250},
+    'susp_fl':       {'x': 170, 'y': 105},
+    'susp_fr':       {'x': 170, 'y': 295},
+    'susp_rl':       {'x': 620, 'y': 105},
+    'susp_rr':       {'x': 620, 'y': 295},
+}
+
+
 @builder_bp.route('/')
 def index():
     vehicle = get_vehicle()
     if not vehicle:
         return redirect(url_for('builder.select_vehicle'))
+
     selections = {
         'engine': get_component('engine'),
         'transmission': get_component('transmission'),
@@ -38,17 +61,55 @@ def index():
         'turbo': get_component('turbo'),
         'intercooler': get_component('intercooler'),
         'exhaust': get_component('exhaust'),
-        'exhaust': get_component('exhaust'),
-        'electric_motor': get_component('electric_motor'),
-        'battery': get_component('battery'),
-        'inverter': get_component('inverter'),
-}
+    }
+
+    # Автоматические связи по правилам
+    CONNECTION_RULES = [
+        ('engine', 'transmission', 'mechanical', 'Сцепление'),
+        ('transmission', 'differential', 'mechanical', 'Кардан'),
+        ('differential', 'suspension', 'mechanical', 'Полуось'),
+        ('ecu', 'engine', 'control', 'Управление двигателем'),
+        ('cooling', 'engine', 'cooling', 'Контур охлаждения'),
+        ('turbo', 'engine', 'air', 'Наддув'),
+        ('intercooler', 'turbo', 'air', 'Интеркулер → турбина'),
+        ('engine', 'exhaust', 'exhaust', 'Выпуск'),
+        ('electronics', 'ecu', 'electrical', 'Проводка ЭБУ'),
+    ]
+
+    connections = []
+    for src_type, tgt_type, conn_type, label in CONNECTION_RULES:
+        src_selected = selections.get(src_type) is not None
+        tgt_selected = selections.get(tgt_type) is not None
+        
+        # Для полуоси: если выбран редуктор, подвеска считается "выбранной"
+        if src_type == 'differential' and tgt_type == 'suspension':
+            tgt_selected = selections.get('differential') is not None
+        
+        if not (src_selected and tgt_selected):
+            continue
+        
+        src_pos = PART_POSITIONS.get(src_type)
+        tgt_pos = PART_POSITIONS.get(tgt_type)
+        if not src_pos or not tgt_pos:
+            continue
+        
+        connections.append({
+            'x1': src_pos['x'], 'y1': src_pos['y'],
+            'x2': tgt_pos['x'], 'y2': tgt_pos['y'],
+            'type': conn_type,
+            'label': label,
+            'from': src_type,
+            'to': tgt_type,
+        })
+
     summary = get_summary()
+
     return render_template('builder/index.html',
                            vehicle=vehicle,
                            selections=selections,
                            summary=summary,
-                           steps=BUILDER_STEPS)
+                           steps=BUILDER_STEPS,
+                           connections=connections)
 
 @builder_bp.route('/select-vehicle')
 def select_vehicle():
@@ -91,8 +152,8 @@ def select_brand():
                         risk_level='LOW',
                         status='AI_GENERATED',
                         data_json=json.dumps({'brand': brand_name, 'models': models}, ensure_ascii=False),
-                        created_at=datetime.utcnow(),
-                        updated_at=datetime.utcnow()
+                        created_at=datetime.now(timezone.utc)(),
+                        updated_at=datetime.now(timezone.utc)()
                     )
                     db.session.add(item)
                     db.session.commit()
@@ -120,6 +181,9 @@ def set_vehicle_route(model_id):
 
 @builder_bp.route('/select-component/<component_type>')
 def select_component(component_type):
+    from models import Swap, Engine
+    import json
+
     vehicle = get_vehicle()
     if not vehicle:
         return redirect(url_for('builder.select_vehicle'))
@@ -127,22 +191,44 @@ def select_component(component_type):
     # Добавляем цены для каждого элемента
     for item in items:
         item['prices'] = get_shop_prices(item['compatibility_id']) if item['compatibility_id'] else []
+
+    # Если выбираем двигатель — подтягиваем свапы для каждого
+    if component_type == 'engine':
+        for item in items:
+            engine_id = item['item'].id
+            raw_swaps = Swap.query.filter_by(
+                source_vehicle_model_id=vehicle['id'],
+                source_component_type='engine',
+                source_component_id=engine_id
+            ).all()
+            swaps_data = []
+            for s in raw_swaps:
+                tgt = Engine.query.get(s.target_component_id)
+                swaps_data.append({
+                    'swap': s,
+                    'target_engine': tgt.name if tgt else '?',
+                    'target_hp': tgt.power_hp if tgt else '?',
+                    'modifications': json.loads(s.required_modifications) if s.required_modifications else [],
+                    'parts': json.loads(s.required_parts) if s.required_parts else [],
+                })
+            item['swaps'] = swaps_data
+
     component_names = {
-    'engine': 'двигатель',
-    'transmission': 'КПП',
-    'differential': 'редуктор',
-    'suspension': 'подвеска',
-    'brakes': 'тормоза',
-    'cooling': 'охлаждение',
-    'electronics': 'электроника',
-    'ecu': 'ЭБУ',
-    'turbo': 'турбина',
-    'intercooler': 'интеркулер',
-    'exhaust': 'выхлоп',
-    'electric_motor': 'электромотор',
-    'battery': 'батарея',
-    'inverter': 'инвертор'
-}
+        'engine': 'двигатель',
+        'transmission': 'КПП',
+        'differential': 'редуктор',
+        'suspension': 'подвеска',
+        'brakes': 'тормоза',
+        'cooling': 'охлаждение',
+        'electronics': 'электроника',
+        'ecu': 'ЭБУ',
+        'turbo': 'турбина',
+        'intercooler': 'интеркулер',
+        'exhaust': 'выхлоп',
+        'electric_motor': 'электромотор',
+        'battery': 'батарея',
+        'inverter': 'инвертор'
+    }
     return render_template('builder/select_component.html',
                            vehicle=vehicle,
                            component_type=component_type,
@@ -238,3 +324,132 @@ def generate_swap(component_type, component_id):
     return render_template('builder/generate_swap.html', engines=engines, component_type=component_type, component_id=component_id, vehicle=vehicle)
 
     return {'components': result}
+
+@builder_bp.route('/api/brands')
+def api_brands():
+    """Список брендов. Если пусто — создать Job generate_brands."""
+    brands = Brand.query.order_by(Brand.name).all()
+    if not brands:
+        job_id = enqueue_job(current_app._get_current_object(), 'generate_brands', {})
+        return jsonify({
+            'brands': [],
+            'job_id': job_id,
+            'status': 'pending',
+            'message': 'AI не подключён. Задача создана, но данные не сгенерированы.'
+        })
+    return jsonify({
+        'brands': [{'id': b.id, 'name': b.name, 'country': b.country} for b in brands],
+        'job_id': None,
+        'status': 'ok'
+    })
+
+
+@builder_bp.route('/api/models/<int:brand_id>')
+def api_models(brand_id):
+    """Список моделей бренда. Если пусто — создать Job generate_models."""
+    brand = Brand.query.get_or_404(brand_id)
+    models = Model.query.filter_by(brand_id=brand_id).order_by(Model.name).all()
+    if not models:
+        job_id = enqueue_job(current_app._get_current_object(),
+                             'generate_models', {'brand_id': brand_id})
+        return jsonify({
+            'brand': {'id': brand.id, 'name': brand.name},
+            'models': [],
+            'job_id': job_id,
+            'status': 'pending'
+        })
+    return jsonify({
+        'brand': {'id': brand.id, 'name': brand.name},
+        'models': [{'id': m.id, 'name': m.name, 'generation': m.generation,
+                    'year_start': m.year_start, 'year_end': m.year_end} for m in models],
+        'job_id': None,
+        'status': 'ok'
+    })
+
+
+@builder_bp.route('/api/generations/<int:model_id>')
+def api_generations(model_id):
+    """Список поколений модели."""
+    model = Model.query.get_or_404(model_id)
+    gens = Generation.query.filter_by(model_id=model_id).order_by(Generation.name).all()
+    if not gens:
+        job_id = enqueue_job(current_app._get_current_object(),
+                             'generate_generations', {'model_id': model_id})
+        return jsonify({
+            'model': {'id': model.id, 'name': model.name},
+            'generations': [],
+            'job_id': job_id,
+            'status': 'pending'
+        })
+    return jsonify({
+        'model': {'id': model.id, 'name': model.name},
+        'generations': [{'id': g.id, 'name': g.name,
+                         'year_start': g.year_start, 'year_end': g.year_end,
+                         'body_types': g.body_types, 'markets': g.markets} for g in gens],
+        'job_id': None,
+        'status': 'ok'
+    })
+
+
+@builder_bp.route('/api/components_v2/<int:model_id>/<component_type>')
+def api_components_v2(model_id, component_type):
+    """Список компонентов типа для модели (через Compatibility)."""
+    from models import Compatibility
+    model = Model.query.get_or_404(model_id)
+    model_class = COMPONENT_MODELS.get(component_type)
+    if not model_class:
+        return jsonify({'error': 'unknown component_type'}), 404
+
+    comps = Compatibility.query.filter_by(
+        vehicle_model_id=model_id, component_type=component_type
+    ).all()
+
+    items = []
+    for c in comps:
+        obj = model_class.query.get(c.component_id)
+        if not obj:
+            continue
+        items.append({
+            'id': obj.id,
+            'name': obj.name,
+            'status': c.status,
+            'description': c.description,
+            'estimated_cost': c.estimated_cost,
+            'difficulty': c.difficulty,
+        })
+
+    if not items:
+        job_id = enqueue_job(current_app._get_current_object(),
+                             'generate_components',
+                             {'model_id': model_id, 'component_type': component_type})
+        return jsonify({
+            'model': {'id': model.id, 'name': model.name},
+            'component_type': component_type,
+            'components': [],
+            'job_id': job_id,
+            'status': 'pending'
+        })
+
+    return jsonify({
+        'model': {'id': model.id, 'name': model.name},
+        'component_type': component_type,
+        'components': items,
+        'job_id': None,
+        'status': 'ok'
+    })
+
+
+@builder_bp.route('/api/job/<int:job_id>')
+def api_job_status(job_id):
+    """Статус задачи генерации."""
+    job = GenerationJob.query.get_or_404(job_id)
+    return jsonify({
+        'id': job.id,
+        'job_type': job.job_type,
+        'status': job.status,
+        'result': job.result_json,
+        'error': job.error,
+        'created_at': job.created_at.isoformat() if job.created_at else None,
+        'started_at': job.started_at.isoformat() if job.started_at else None,
+        'finished_at': job.finished_at.isoformat() if job.finished_at else None,
+    })

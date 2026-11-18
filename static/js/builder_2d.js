@@ -7,39 +7,71 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!svg) return;
 
     const zones = svg.querySelectorAll('.car-zone');
+    const hitboxes = svg.querySelectorAll('.connection-hitbox');
+    const visualLines = svg.querySelectorAll('.connection-line');
     const popup = document.getElementById('component-popup');
     const popupTitle = document.getElementById('popup-title');
     const popupList = document.getElementById('popup-list');
     const vehicleId = svg.dataset.vehicleId;
 
+    // Подсветка связей при наведении на компонент
     zones.forEach(zone => {
         const componentType = zone.dataset.component;
+        const partId = zone.dataset.partId;
 
-        // Подсветка при наведении
         zone.addEventListener('mouseenter', () => {
-            zone.style.fill = 'rgba(255, 107, 107, 0.5)';
-            zone.style.stroke = '#ff6b6b';
+            if (partId) {
+                hitboxes.forEach(hb => {
+                    if (hb.dataset.from === partId || hb.dataset.to === partId) {
+                        // Подсветить соответствующую видимую линию
+                        const visLine = hb.nextElementSibling;
+                        if (visLine) visLine.classList.add('highlight');
+                    }
+                });
+            }
             zone.style.cursor = 'pointer';
         });
+
         zone.addEventListener('mouseleave', () => {
-            zone.style.fill = 'rgba(255,255,255,0)';
-            zone.style.stroke = 'rgba(255,255,255,0.2)';
+            visualLines.forEach(line => line.classList.remove('highlight'));
         });
 
-        // Клик
-        zone.addEventListener('click', async (e) => {
+        zone.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (!vehicleId) return;
-
-            try {
-                const response = await fetch(`/builder/api/components/${vehicleId}/${componentType}`);
-                const data = await response.json();
-                showPopup(componentType, data.components);
-            } catch (err) {
-                console.error('Ошибка загрузки компонентов:', err);
-            }
+            window.location.href = `/builder/select-component/${componentType}`;
         });
     });
+
+    // Клик по связи
+    hitboxes.forEach(hb => {
+        hb.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const label = hb.dataset.label || 'Связь';
+            const type = hb.dataset.type || '';
+            const from = hb.dataset.from || '';
+            const to = hb.dataset.to || '';
+            showConnectionPopup(label, type, from, to);
+        });
+    });
+
+    function showConnectionPopup(label, type, from, to) {
+        if (!popup || !popupTitle || !popupList) return;
+        popupTitle.textContent = `🔗 ${label}`;
+        popupList.innerHTML = `
+            <li class="list-group-item bg-transparent text-light">
+                <strong>Тип:</strong> ${type}
+            </li>
+            <li class="list-group-item bg-transparent text-light">
+                <strong>Соединяет:</strong> ${from} → ${to}
+            </li>
+            <li class="list-group-item bg-transparent text-light">
+                <small class="text-muted">Клик по компонентам на схеме открывает выбор деталей.</small>
+            </li>
+        `;
+        popup.style.display = 'block';
+    }
+
+    // ... остальные функции showPopup, getComponentLabel — без изменений
 
     function showPopup(type, components) {
         if (!popup || !popupTitle || !popupList) return;

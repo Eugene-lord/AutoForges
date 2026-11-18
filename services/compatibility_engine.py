@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from models import db, Swap
 from services.mock_ai_provider import MockAIProvider
 
@@ -51,8 +51,8 @@ def generate_swap_and_save(source_vehicle_model_id, source_component_type, sourc
         source='ai',
         confidence=0.7,
         risk_level='MEDIUM',
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
+        created_at=datetime.now(timezone.utc)(),
+        updated_at=datetime.now(timezone.utc)()
     )
     db.session.add(swap)
     db.session.commit()

@@ -3,6 +3,17 @@
 {% block content %}
 <h2 class="mb-4 text-light">🚗 Ваш проект</h2>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
 <!-- Прогресс-бар -->
 <div class="glass-card p-3 mb-4">
     <div class="d-flex flex-wrap justify-content-between">
@@ -251,27 +262,111 @@
     </div>
     <div class="row">
         <div class="col-md-8 position-relative">
-            <svg id="car-svg" viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;" data-vehicle-id="{{ vehicle.id }}">
-                <path d="M120,200 L120,140 Q120,110 150,110 L350,110 L420,70 Q450,60 480,70 L530,110 L680,110 Q700,110 700,130 L700,200 Z" fill="#2a3a4a" stroke="#4a5a6a" stroke-width="2"/>
-                <circle cx="220" cy="230" r="40" fill="#1a1a1a" stroke="#4a5a6a" stroke-width="2"/>
-                <circle cx="580" cy="230" r="40" fill="#1a1a1a" stroke="#4a5a6a" stroke-width="2"/>
-                <circle cx="220" cy="230" r="20" fill="#333" />
-                <circle cx="580" cy="230" r="20" fill="#333" />
-                <!-- Зоны -->
-                <rect class="car-zone" data-component="engine" x="430" y="120" width="100" height="60" rx="5" />
-                <rect class="car-zone" data-component="transmission" x="530" y="150" width="60" height="40" rx="3" />
-                <rect class="car-zone" data-component="differential" x="640" y="160" width="40" height="30" rx="3" />
-                <circle class="car-zone" data-component="suspension" cx="220" cy="190" r="25" />
-                <circle class="car-zone" data-component="suspension" cx="220" cy="270" r="25" />
-                <circle class="car-zone" data-component="suspension" cx="580" cy="190" r="25" />
-                <circle class="car-zone" data-component="suspension" cx="580" cy="270" r="25" />
-                <circle class="car-zone" data-component="brakes" cx="220" cy="230" r="30" />
-                <circle class="car-zone" data-component="brakes" cx="580" cy="230" r="30" />
-                <rect class="car-zone" data-component="cooling" x="390" y="130" width="30" height="40" rx="2" />
-                <rect class="car-zone" data-component="exhaust" x="700" y="200" width="40" height="15" rx="3" />
-                <rect class="car-zone" data-component="battery" x="250" y="240" width="300" height="15" rx="2" />
-                <rect class="car-zone" data-component="electronics" x="350" y="180" width="20" height="20" rx="2" />
-            </svg>
+            <svg id="car-svg" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" 
+     style="width:100%; height:auto; background: rgba(0,0,0,0.25); border-radius: 10px;"
+     data-vehicle-id="{{ vehicle.id }}">
+  <defs>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- ===== КУЗОВ (вид сверху, насквозь) ===== -->
+  <g id="body-outline">
+    <path d="M 60,200 Q 60,60 140,60 L 660,60 Q 740,60 740,200 Q 740,340 660,340 L 140,340 Q 60,340 60,200 Z"
+          fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+    <path d="M 280,65 Q 295,200 280,335" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
+    <path d="M 530,65 Q 515,200 530,335" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
+    <line x1="60" y1="200" x2="740" y2="200" stroke="rgba(255,255,255,0.04)" stroke-width="1" stroke-dasharray="12,12"/>
+  </g>
+
+  <!-- ===== СЛОЙ СВЯЗЕЙ (из БД) ===== -->
+  <g id="connections">
+    {% for conn in connections %}
+    <!-- Невидимая широкая линия для клика -->
+    <line class="connection-hitbox"
+          x1="{{ conn.x1 }}" y1="{{ conn.y1 }}"
+          x2="{{ conn.x2 }}" y2="{{ conn.y2 }}"
+          data-conn-id="{{ conn.id }}"
+          data-from="{{ conn.from }}"
+          data-to="{{ conn.to }}"
+          data-type="{{ conn.type }}"
+          data-label="{{ conn.label }}"/>
+    <!-- Видимая линия -->
+    <line class="connection-line connection-{{ conn.type }}"
+          x1="{{ conn.x1 }}" y1="{{ conn.y1 }}"
+          x2="{{ conn.x2 }}" y2="{{ conn.y2 }}"
+          pointer-events="none">
+        <title>{{ conn.label }} ({{ conn.type }})</title>
+    </line>
+    {% endfor %}
+</g>
+
+  <!-- ===== КОЛЕСА ===== -->
+  <g id="wheels">
+    <rect class="car-zone" data-component="brakes" data-part-id="wheel_fl" x="135" y="45" width="70" height="40" rx="8"/>
+    <rect class="car-zone" data-component="brakes" data-part-id="wheel_fr" x="135" y="315" width="70" height="40" rx="8"/>
+    <rect class="car-zone" data-component="brakes" data-part-id="wheel_rl" x="585" y="45" width="70" height="40" rx="8"/>
+    <rect class="car-zone" data-component="brakes" data-part-id="wheel_rr" x="585" y="315" width="70" height="40" rx="8"/>
+  </g>
+
+  <!-- ===== ПОДВЕСКА ===== -->
+  <g id="suspension">
+    <rect class="car-zone" data-component="suspension" data-part-id="susp_fl" x="145" y="90" width="50" height="30" rx="3"/>
+    <rect class="car-zone" data-component="suspension" data-part-id="susp_fr" x="145" y="280" width="50" height="30" rx="3"/>
+    <rect class="car-zone" data-component="suspension" data-part-id="susp_rl" x="595" y="90" width="50" height="30" rx="3"/>
+    <rect class="car-zone" data-component="suspension" data-part-id="susp_rr" x="595" y="280" width="50" height="30" rx="3"/>
+  </g>
+
+  <!-- ===== ИНТЕРКУЛЕР ===== -->
+  <rect class="car-zone" data-component="intercooler" data-part-id="intercooler" x="75" y="170" width="30" height="60" rx="3"/>
+
+  <!-- ===== РАДИАТОР ===== -->
+  <rect class="car-zone" data-component="cooling" data-part-id="radiator" x="110" y="160" width="35" height="80" rx="3"/>
+
+  <!-- ===== ДВИГАТЕЛЬ ===== -->
+  <rect class="car-zone" data-component="engine" data-part-id="engine" x="170" y="170" width="140" height="60" rx="6"/>
+  <g stroke="rgba(255,255,255,0.12)" stroke-width="0.5">
+    <line x1="190" y1="175" x2="190" y2="225"/>
+    <line x1="210" y1="175" x2="210" y2="225"/>
+    <line x1="230" y1="175" x2="230" y2="225"/>
+    <line x1="250" y1="175" x2="250" y2="225"/>
+    <line x1="270" y1="175" x2="270" y2="225"/>
+    <line x1="290" y1="175" x2="290" y2="225"/>
+  </g>
+
+  <!-- ===== ТУРБИНА ===== -->
+  <rect class="car-zone" data-component="turbo" data-part-id="turbo" x="200" y="140" width="40" height="20" rx="10"/>
+
+  <!-- ===== КПП ===== -->
+  <rect class="car-zone" data-component="transmission" data-part-id="transmission" x="315" y="180" width="65" height="40" rx="4"/>
+
+  <!-- ===== РЕДУКТОР ===== -->
+  <rect class="car-zone" data-component="differential" data-part-id="differential" x="560" y="175" width="60" height="50" rx="8"/>
+
+  <!-- ===== ВЫХЛОП ===== -->
+  <path class="car-zone" data-component="exhaust" data-part-id="exhaust"
+        d="M 280,230 L 280,250 L 720,250 L 720,285"
+        fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.4)" 
+        stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- ===== ЭБУ ===== -->
+  <rect class="car-zone" data-component="ecu" data-part-id="ecu" x="390" y="130" width="35" height="25" rx="3"/>
+
+  <!-- ===== ЭЛЕКТРОНИКА ===== -->
+  <rect class="car-zone" data-component="electronics" data-part-id="electronics" x="660" y="150" width="50" height="30" rx="3"/>
+
+  <!-- ===== ПОДПИСИ ===== -->
+  <g font-family="sans-serif" font-size="10" fill="rgba(255,255,255,0.55)" 
+     text-anchor="middle" pointer-events="none">
+    <text x="240" y="205">ДВИГ</text>
+    <text x="347" y="205">КПП</text>
+    <text x="590" y="205">РЕД</text>
+    <text x="127" y="205" font-size="8" transform="rotate(-90,127,205)">РАД</text>
+    <text x="90" y="205" font-size="8" transform="rotate(-90,90,205)">ИК</text>
+  </g>
+</svg>
         </div>
         <div class="col-md-4">
             <div id="component-popup" class="glass-card p-3" style="display:none; max-height:350px; overflow-y:auto;">

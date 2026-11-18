@@ -1,0 +1,36 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_content %}
+<h2 class="text-light mb-3">Связи компонентов (Connections)</h2>
+<a href="{{ url_for('admin.new_connection') }}" class="btn btn-glow btn-sm mb-3">+ Добавить связь</a>
+<table class="table table-dark table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Автомобиль</th>
+            <th>Тип</th>
+            <th>Из → В</th>
+            <th>Метка</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in enriched %}
+        {% set c = e.conn %}
+        <tr>
+            <td>{{ c.id }}</td>
+            <td>{{ e.vehicle_name }}</td>
+            <td><span class="badge bg-secondary">{{ c.connection_type }}</span></td>
+            <td>{{ c.source_part_id }} → {{ c.target_part_id }}</td>
+            <td>{{ c.label or '—' }}</td>
+            <td>
+                <a href="{{ url_for('admin.edit_connection', id=c.id) }}" class="btn btn-outline-light btn-sm">✏️</a>
+                <form method="POST" action="{{ url_for('admin.delete_connection', id=c.id) }}" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

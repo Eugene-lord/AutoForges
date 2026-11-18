@@ -1,0 +1,149 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_content %}
+<h2 class="text-light mb-3">{% if item %}Редактировать{% else %}Добавить{% endif %} свап</h2>
+<form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- Автомобиль -->
+    <div class="mb-3">
+        <label class="form-label text-light">Автомобиль (источник)</label>
+        <select name="source_vehicle_model_id" class="form-select bg-dark text-light border-secondary" required>
+            <option value="">-- Выберите --</option>
+            {% for m in models_list %}
+                <option value="{{ m.id }}" {% if item and item.source_vehicle_model_id == m.id %}selected{% endif %}>
+                    {{ m.brand.name }} {{ m.name }} {{ m.generation }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Тип компонента -->
+    <div class="mb-3">
+        <label class="form-label text-light">Тип компонента</label>
+        <select name="component_type" id="component_type" class="form-select bg-dark text-light border-secondary" required>
+            <option value="">-- Выберите --</option>
+            {% for ct in component_types %}
+                <option value="{{ ct }}" {% if item and item.source_component_type == ct %}selected{% endif %}>
+                    {{ ct }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Исходный и целевой компонент -->
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label text-light">Исходный компонент</label>
+            <select name="source_component_id" id="source_component_id" class="form-select bg-dark text-light border-secondary" required>
+                <option value="">-- Сначала выберите тип --</option>
+                {% if pre_source_items %}
+                    {% for it in pre_source_items %}
+                        <option value="{{ it.id }}" {% if item and item.source_component_id == it.id %}selected{% endif %}>{{ it.label }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label text-light">Целевой компонент</label>
+            <select name="target_component_id" id="target_component_id" class="form-select bg-dark text-light border-secondary" required>
+                <option value="">-- Сначала выберите тип --</option>
+                {% if pre_target_items %}
+                    {% for it in pre_target_items %}
+                        <option value="{{ it.id }}" {% if item and item.target_component_id == it.id %}selected{% endif %}>{{ it.label }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label text-light">Сложность (1–10)</label>
+            <input type="number" name="difficulty" min="1" max="10" class="form-control bg-dark text-light border-secondary" 
+                   value="{{ item.difficulty if item else 5 }}">
+        </div>
+        <div class="col-md-4 mb-3">
+            <label class="form-label text-light">Статус</label>
+            <select name="status" class="form-select bg-dark text-light border-secondary">
+                {% for st in ['REVIEW_REQUIRED', 'VERIFIED', 'AI_GENERATED', 'REJECTED'] %}
+                    <option value="{{ st }}" {% if item and item.status == st %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label class="form-label text-light">Уровень риска</label>
+            <select name="risk_level" class="form-select bg-dark text-light border-secondary">
+                {% for rl in ['LOW', 'MEDIUM', 'HIGH'] %}
+                    <option value="{{ rl }}" {% if item and item.risk_level == rl %}selected{% endif %}>{{ rl }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label text-light">Модификации (по одной на строку)</label>
+        <textarea name="required_modifications" class="form-control bg-dark text-light border-secondary" rows="5" 
+                  placeholder="Замена подушек&#10;Замена проводки&#10;...">{{ mods_str if mods_str else '' }}</textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label text-light">Требуемые детали (по одной на строку)</label>
+        <textarea name="required_parts" class="form-control bg-dark text-light border-secondary" rows="5" 
+                  placeholder="Подушки&#10;Проводка&#10;...">{{ parts_str if parts_str else '' }}</textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label text-light">Заметки</label>
+        <textarea name="notes" class="form-control bg-dark text-light border-secondary" rows="3">{{ item.notes if item else '' }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-glow">Сохранить</button>
+    <a href="{{ url_for('admin.list_swaps') }}" class="btn btn-outline-light">Отмена</a>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('component_type');
+    const sourceSelect = document.getElementById('source_component_id');
+    const targetSelect = document.getElementById('target_component_id');
+
+    function loadComponents(componentType, keepSourceId, keepTargetId) {
+        if (!componentType) {
+            sourceSelect.innerHTML = '<option value="">-- Сначала выберите тип --</option>';
+            targetSelect.innerHTML = '<option value="">-- Сначала выберите тип --</option>';
+            return;
+        }
+
+        fetch(`/admin/api/components/${componentType}`)
+            .then(r => r.json())
+            .then(data => {
+                sourceSelect.innerHTML = '<option value="">-- Выберите --</option>';
+                targetSelect.innerHTML = '<option value="">-- Выберите --</option>';
+                data.forEach(item => {
+                    const opt1 = document.createElement('option');
+                    opt1.value = item.id;
+                    opt1.textContent = item.label;
+                    if (keepSourceId && keepSourceId == item.id) opt1.selected = true;
+                    sourceSelect.appendChild(opt1);
+
+                    const opt2 = document.createElement('option');
+                    opt2.value = item.id;
+                    opt2.textContent = item.label;
+                    if (keepTargetId && keepTargetId == item.id) opt2.selected = true;
+                    targetSelect.appendChild(opt2);
+                });
+            })
+            .catch(err => console.error('Ошибка загрузки компонентов:', err));
+    }
+
+    typeSelect.addEventListener('change', function() {
+        loadComponents(this.value, null, null);
+    });
+
+    // Если при редактировании тип уже выбран, но списки пусты (нет pre_items) — загружаем
+    if (typeSelect.value && sourceSelect.options.length <= 1) {
+        loadComponents(typeSelect.value, null, null);
+    }
+});
+</script>
+{% endblock %}

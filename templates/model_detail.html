@@ -6,27 +6,137 @@
 <p class="text-muted">{{ model.body_type }} | {{ model.year_start }}–{{ model.year_end }}</p>
 <p>{{ model.description }}</p>
 
-<h4 class="text-light mt-4">Доступные двигатели</h4>
-{% if engines %}
+<!-- Универсальные секции по типам компонентов -->
+{% if sections %}
+    {% for sec in sections %}
+    <h4 class="text-warning mt-5">{{ sec.icon }} {{ sec.label }} ({{ sec.entries|length }})</h4>
     <div class="row">
-    {% for engine in engines %}
-        <div class="col-md-4 mb-3">
-            <div class="glass-card p-3">
-                <h5 class="text-warning">{{ engine.name }}</h5>
+        {% for it in sec.entries %}
+        <div class="col-md-6 mb-3">
+            <div class="glass-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="text-light">{{ it.obj.name }}</h5>
+                    <span class="badge
+                        {% if it.status == 'compatible' %}bg-success
+                        {% elif it.status == 'warning' %}bg-warning text-dark
+                        {% else %}bg-danger{% endif %}">
+                        {% if it.status == 'compatible' %}✅
+                        {% elif it.status == 'warning' %}⚠️
+                        {% else %}❌{% endif %}
+                    </span>
+                </div>
+                {% if it.description %}
+                    <p class="text-muted small">{{ it.description }}</p>
+                {% endif %}
+
                 <ul class="list-unstyled small text-light">
-                    <li>Объём: {{ engine.displacement }} л</li>
-                    <li>Мощность: {{ engine.power_hp }} л.с.</li>
-                    <li>Крутящий момент: {{ engine.torque_nm }} Нм</li>
-                    <li>Топливо: {{ engine.fuel_type }}</li>
-                    <li>Конфигурация: {{ engine.configuration }}</li>
+                    {% if sec.type == 'engine' %}
+                        <li>Объём: {{ it.obj.displacement }} л</li>
+                        <li>Мощность: {{ it.obj.power_hp }} л.с.</li>
+                        <li>Крутящий момент: {{ it.obj.torque_nm }} Нм</li>
+                        <li>Конфигурация: {{ it.obj.configuration }}</li>
+                    {% elif sec.type == 'transmission' %}
+                        <li>Тип: {{ it.obj.type }}</li>
+                        <li>Передач: {{ it.obj.gears }}</li>
+                    {% elif sec.type == 'differential' %}
+                        <li>Тип: {{ it.obj.type }}</li>
+                        <li>Ratio: {{ it.obj.ratio }}</li>
+                    {% elif sec.type == 'suspension' %}
+                        <li>Тип: {{ it.obj.type }}</li>
+                    {% elif sec.type == 'brakes' %}
+                        <li>Тип: {{ it.obj.type }}</li>
+                        <li>Размер: {{ it.obj.size }}</li>
+                    {% elif sec.type == 'cooling' %}
+                        <li>Тип: {{ it.obj.type }}</li>
+                    {% elif sec.type == 'electronics' %}
+                        <li>{{ it.obj.description or '—' }}</li>
+                    {% elif sec.type == 'ecu' %}
+                        <li>Тип: {{ it.obj.type }}</li>
+                    {% elif sec.type == 'turbo' %}
+                        <li>Давление: {{ it.obj.pressure }}</li>
+                    {% elif sec.type == 'intercooler' %}
+                        <li>Тип: {{ it.obj.type }}</li>
+                    {% elif sec.type == 'exhaust' %}
+                        <li>Материал: {{ it.obj.material }}</li>
+                    {% endif %}
                 </ul>
+
+                {% if it.estimated_cost %}
+                    <small class="text-info">Стоимость: ${{ it.estimated_cost }}</small><br>
+                {% endif %}
+                {% if it.difficulty %}
+                    <small class="text-info">Сложность: {{ it.difficulty }}/10</small>
+                {% endif %}
             </div>
         </div>
-    {% endfor %}
+        {% endfor %}
     </div>
+    {% endfor %}
 {% else %}
-    <p class="text-muted">Двигатели пока не добавлены.</p>
+    <p class="text-muted">Для этой модели пока нет данных о компонентах.</p>
 {% endif %}
 
-<a href="{{ url_for('catalog.model_list', brand_id=model.brand_id) }}" class="btn btn-outline-light mt-3">← Назад к моделям {{ model.brand.name }}</a>
+<!-- Свапы: один общий раскрывающийся блок -->
+{% if swaps %}
+<details class="glass-card p-3 mt-5">
+    <summary class="d-flex justify-content-between align-items-center" style="cursor:pointer;">
+        <h4 class="text-warning mb-0">🔄 Возможные свапы ({{ swaps|length }})</h4>
+        <small class="text-muted">нажмите, чтобы раскрыть</small>
+    </summary>
+    <div class="mt-3 pt-3 border-top border-secondary">
+        <p class="text-muted small">Замена двигателя на другой. Показаны требования и сложность.</p>
+        {% for item in swaps %}
+        <div class="glass-card p-3 mb-2">
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
+                <div>
+                    <strong>{{ item.source_engine }}</strong> ({{ item.source_hp }} л.с.)
+                    →
+                    <strong>{{ item.target_engine }}</strong> ({{ item.target_hp }} л.с.)
+                </div>
+                <div>
+                    <span class="badge {% if item.swap.difficulty >= 8 %}bg-danger{% elif item.swap.difficulty >= 5 %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                        Сложность {{ item.swap.difficulty }}/10
+                    </span>
+                    <span class="badge {% if item.swap.status == 'VERIFIED' %}bg-success{% elif item.swap.status == 'REVIEW_REQUIRED' %}bg-warning text-dark{% else %}bg-secondary{% endif %} ms-1">
+                        {{ item.swap.status }}
+                    </span>
+                </div>
+            </div>
+            {% if item.swap.notes %}
+                <p class="text-light small">{{ item.swap.notes }}</p>
+            {% endif %}
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <h6 class="text-warning">Модификации ({{ item.modifications|length }}):</h6>
+                    <ul class="list-unstyled small text-light">
+                        {% for m in item.modifications %}
+                            <li>⚙️ {{ m }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-warning">Детали ({{ item.parts|length }}):</h6>
+                    <ul class="list-unstyled small text-light">
+                        {% for p in item.parts %}
+                            <li>🔧 {{ p }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% if item.swap.risk_level == 'HIGH' %}
+                <div class="alert alert-danger mt-3 mb-0 py-2">
+                    <small>⚠️ Высокий риск: свап требует серьёзной переработки и может быть небезопасен.</small>
+                </div>
+            {% elif item.swap.risk_level == 'MEDIUM' %}
+                <div class="alert alert-warning mt-3 mb-0 py-2">
+                    <small>⚠️ Средний риск: требуются доработки, рекомендуется проверка специалистом.</small>
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</details>
+{% endif %}
+
+<a href="{{ url_for('catalog.model_list', brand_id=model.brand_id) }}" class="btn btn-outline-light mt-4">← Назад к моделям {{ model.brand.name }}</a>
 {% endblock %}

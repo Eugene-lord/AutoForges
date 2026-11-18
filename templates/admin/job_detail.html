@@ -1,0 +1,31 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_content %}
+<h2 class="text-light mb-3">Задача #{{ job.id }}</h2>
+<div class="glass-card p-4">
+    <p><strong class="text-warning">Тип:</strong> {{ job.job_type }}</p>
+    <p><strong class="text-warning">Статус:</strong> 
+        <span class="badge 
+            {% if job.status == 'done' %}bg-success
+            {% elif job.status == 'running' %}bg-info
+            {% elif job.status == 'failed' %}bg-danger
+            {% else %}bg-secondary{% endif %}">
+            {{ job.status }}
+        </span>
+    </p>
+    <p><strong class="text-warning">Создана:</strong> {{ job.created_at }}</p>
+    <p><strong class="text-warning">Начата:</strong> {{ job.started_at or '—' }}</p>
+    <p><strong class="text-warning">Завершена:</strong> {{ job.finished_at or '—' }}</p>
+
+    <h5 class="text-warning mt-4">Параметры</h5>
+    <pre class="bg-dark text-light p-3 rounded">{{ job.params_json or '—' }}</pre>
+
+    <h5 class="text-warning mt-4">Результат</h5>
+    <pre class="bg-dark text-light p-3 rounded">{{ job.result_json or '—' }}</pre>
+
+    {% if job.error %}
+    <h5 class="text-danger mt-4">Ошибка</h5>
+    <pre class="bg-dark text-danger p-3 rounded">{{ job.error }}</pre>
+    {% endif %}
+</div>
+<a href="{{ url_for('admin.jobs_list') }}" class="btn btn-outline-light mt-3">← К списку задач</a>
+{% endblock %}

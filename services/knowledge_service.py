@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from services.ai_provider import DeepSeekProvider
 from models import db, KnowledgeItem
 from services.ai_provider import FallbackProvider
@@ -54,8 +54,8 @@ def generate_knowledge(prompt: str, knowledge_type: str = "swap") -> KnowledgeIt
         risk_level=risk,
         status='AI_GENERATED',
         data_json=json.dumps(data, ensure_ascii=False),
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
+        created_at=datetime.now(timezone.utc)(),
+        updated_at=datetime.now(timezone.utc)()
     )
     db.session.add(item)
     db.session.commit()

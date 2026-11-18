@@ -2,9 +2,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from models import (db, Brand, Model, Engine, Transmission, Differential,
                     Suspension, Brake, Cooling, Electronics, ECU, Turbo,
-                    Intercooler, Exhaust, Compatibility, Article, Shop, ShopLink, ElectricMotor, Battery, Inverter)
+                    Intercooler, Exhaust, Compatibility, Article, Shop, ShopLink, ElectricMotor, Battery, Inverter, Connection)
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timezone
 from models import KnowledgeItem, Swap
 import json
 
@@ -136,6 +136,8 @@ def list_engines():
 def new_engine():
     models = Model.query.all()
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item = Engine(
             engine_code=request.form['engine_code'],
             name=request.form['name'],
@@ -144,7 +146,10 @@ def new_engine():
             torque_nm=request.form.get('torque_nm', type=int),
             fuel_type=request.form.get('fuel_type', ''),
             configuration=request.form.get('configuration', ''),
-            model_id=request.form.get('model_id', type=int) or None
+            model_id=request.form.get('model_id', type=int) or None,
+            source=source,
+            verified_by=current_user.id if is_verified else None,
+            verified_at=datetime.now(timezone.utc)() if is_verified else None
         )
         db.session.add(item)
         db.session.commit()
@@ -158,6 +163,8 @@ def edit_engine(id):
     item = Engine.query.get_or_404(id)
     models = Model.query.all()
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item.engine_code = request.form['engine_code']
         item.name = request.form['name']
         item.displacement = request.form.get('displacement', type=float)
@@ -166,6 +173,13 @@ def edit_engine(id):
         item.fuel_type = request.form.get('fuel_type', '')
         item.configuration = request.form.get('configuration', '')
         item.model_id = request.form.get('model_id', type=int) or None
+        item.source = source
+        if is_verified:
+            item.verified_by = current_user.id
+            item.verified_at = datetime.now(timezone.utc)()
+        else:
+            item.verified_by = None
+            item.verified_at = None
         db.session.commit()
         flash('Двигатель обновлён', 'success')
         return redirect(url_for('admin.list_engines'))
@@ -191,10 +205,15 @@ def list_transmissions():
 @admin_required
 def new_transmission():
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item = Transmission(
             name=request.form['name'],
             type=request.form.get('type', ''),
-            gears=request.form.get('gears', type=int)
+            gears=request.form.get('gears', type=int),
+            source=source,
+            verified_by=current_user.id if is_verified else None,
+            verified_at=datetime.now(timezone.utc)() if is_verified else None
         )
         db.session.add(item)
         db.session.commit()
@@ -207,9 +226,18 @@ def new_transmission():
 def edit_transmission(id):
     item = Transmission.query.get_or_404(id)
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item.name = request.form['name']
         item.type = request.form.get('type', '')
         item.gears = request.form.get('gears', type=int)
+        item.source = source
+        if is_verified:
+            item.verified_by = current_user.id
+            item.verified_at = datetime.now(timezone.utc)()
+        else:
+            item.verified_by = None
+            item.verified_at = None
         db.session.commit()
         flash('Трансмиссия обновлена', 'success')
         return redirect(url_for('admin.list_transmissions'))
@@ -235,10 +263,15 @@ def list_differentials():
 @admin_required
 def new_differential():
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item = Differential(
             name=request.form['name'],
             type=request.form.get('type', ''),
-            ratio=request.form.get('ratio', type=float)
+            ratio=request.form.get('ratio', type=float),
+            source=source,
+            verified_by=current_user.id if is_verified else None,
+            verified_at=datetime.now(timezone.utc)() if is_verified else None
         )
         db.session.add(item)
         db.session.commit()
@@ -251,9 +284,18 @@ def new_differential():
 def edit_differential(id):
     item = Differential.query.get_or_404(id)
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item.name = request.form['name']
         item.type = request.form.get('type', '')
         item.ratio = request.form.get('ratio', type=float)
+        item.source = source
+        if is_verified:
+            item.verified_by = current_user.id
+            item.verified_at = datetime.now(timezone.utc)()
+        else:
+            item.verified_by = None
+            item.verified_at = None
         db.session.commit()
         flash('Редуктор обновлён', 'success')
         return redirect(url_for('admin.list_differentials'))
@@ -279,9 +321,14 @@ def list_suspensions():
 @admin_required
 def new_suspension():
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item = Suspension(
             name=request.form['name'],
-            type=request.form.get('type', '')
+            type=request.form.get('type', ''),
+            source=source,
+            verified_by=current_user.id if is_verified else None,
+            verified_at=datetime.now(timezone.utc)() if is_verified else None
         )
         db.session.add(item)
         db.session.commit()
@@ -294,8 +341,17 @@ def new_suspension():
 def edit_suspension(id):
     item = Suspension.query.get_or_404(id)
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item.name = request.form['name']
         item.type = request.form.get('type', '')
+        item.source = source
+        if is_verified:
+            item.verified_by = current_user.id
+            item.verified_at = datetime.now(timezone.utc)()
+        else:
+            item.verified_by = None
+            item.verified_at = None
         db.session.commit()
         flash('Подвеска обновлена', 'success')
         return redirect(url_for('admin.list_suspensions'))
@@ -321,10 +377,15 @@ def list_brakes():
 @admin_required
 def new_brake():
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item = Brake(
             name=request.form['name'],
             type=request.form.get('type', ''),
-            size=request.form.get('size', '')
+            size=request.form.get('size', ''),
+            source=source,
+            verified_by=current_user.id if is_verified else None,
+            verified_at=datetime.now(timezone.utc)() if is_verified else None
         )
         db.session.add(item)
         db.session.commit()
@@ -337,9 +398,18 @@ def new_brake():
 def edit_brake(id):
     item = Brake.query.get_or_404(id)
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item.name = request.form['name']
         item.type = request.form.get('type', '')
         item.size = request.form.get('size', '')
+        item.source = source
+        if is_verified:
+            item.verified_by = current_user.id
+            item.verified_at = datetime.now(timezone.utc)()
+        else:
+            item.verified_by = None
+            item.verified_at = None
         db.session.commit()
         flash('Тормоза обновлены', 'success')
         return redirect(url_for('admin.list_brakes'))
@@ -365,9 +435,14 @@ def list_coolings():
 @admin_required
 def new_cooling():
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item = Cooling(
             name=request.form['name'],
-            type=request.form.get('type', '')
+            type=request.form.get('type', ''),
+            source=source,
+            verified_by=current_user.id if is_verified else None,
+            verified_at=datetime.now(timezone.utc)() if is_verified else None
         )
         db.session.add(item)
         db.session.commit()
@@ -380,8 +455,17 @@ def new_cooling():
 def edit_cooling(id):
     item = Cooling.query.get_or_404(id)
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item.name = request.form['name']
         item.type = request.form.get('type', '')
+        item.source = source
+        if is_verified:
+            item.verified_by = current_user.id
+            item.verified_at = datetime.now(timezone.utc)()
+        else:
+            item.verified_by = None
+            item.verified_at = None
         db.session.commit()
         flash('Охлаждение обновлено', 'success')
         return redirect(url_for('admin.list_coolings'))
@@ -407,9 +491,14 @@ def list_electronics():
 @admin_required
 def new_electronics():
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item = Electronics(
             name=request.form['name'],
-            description=request.form.get('description', '')
+            description=request.form.get('description', ''),
+            source=source,
+            verified_by=current_user.id if is_verified else None,
+            verified_at=datetime.now(timezone.utc)() if is_verified else None
         )
         db.session.add(item)
         db.session.commit()
@@ -422,8 +511,17 @@ def new_electronics():
 def edit_electronics(id):
     item = Electronics.query.get_or_404(id)
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item.name = request.form['name']
         item.description = request.form.get('description', '')
+        item.source = source
+        if is_verified:
+            item.verified_by = current_user.id
+            item.verified_at = datetime.now(timezone.utc)()
+        else:
+            item.verified_by = None
+            item.verified_at = None
         db.session.commit()
         flash('Электроника обновлена', 'success')
         return redirect(url_for('admin.list_electronics'))
@@ -449,9 +547,14 @@ def list_ecus():
 @admin_required
 def new_ecu():
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item = ECU(
             name=request.form['name'],
-            type=request.form.get('type', '')
+            type=request.form.get('type', ''),
+            source=source,
+            verified_by=current_user.id if is_verified else None,
+            verified_at=datetime.now(timezone.utc)() if is_verified else None
         )
         db.session.add(item)
         db.session.commit()
@@ -464,8 +567,17 @@ def new_ecu():
 def edit_ecu(id):
     item = ECU.query.get_or_404(id)
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item.name = request.form['name']
         item.type = request.form.get('type', '')
+        item.source = source
+        if is_verified:
+            item.verified_by = current_user.id
+            item.verified_at = datetime.now(timezone.utc)()
+        else:
+            item.verified_by = None
+            item.verified_at = None
         db.session.commit()
         flash('ЭБУ обновлён', 'success')
         return redirect(url_for('admin.list_ecus'))
@@ -491,9 +603,14 @@ def list_turbos():
 @admin_required
 def new_turbo():
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item = Turbo(
             name=request.form['name'],
-            pressure=request.form.get('pressure', '')
+            pressure=request.form.get('pressure', ''),
+            source=source,
+            verified_by=current_user.id if is_verified else None,
+            verified_at=datetime.now(timezone.utc)() if is_verified else None
         )
         db.session.add(item)
         db.session.commit()
@@ -506,8 +623,17 @@ def new_turbo():
 def edit_turbo(id):
     item = Turbo.query.get_or_404(id)
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item.name = request.form['name']
         item.pressure = request.form.get('pressure', '')
+        item.source = source
+        if is_verified:
+            item.verified_by = current_user.id
+            item.verified_at = datetime.now(timezone.utc)()
+        else:
+            item.verified_by = None
+            item.verified_at = None
         db.session.commit()
         flash('Турбина обновлена', 'success')
         return redirect(url_for('admin.list_turbos'))
@@ -533,9 +659,14 @@ def list_intercoolers():
 @admin_required
 def new_intercooler():
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item = Intercooler(
             name=request.form['name'],
-            type=request.form.get('type', '')
+            type=request.form.get('type', ''),
+            source=source,
+            verified_by=current_user.id if is_verified else None,
+            verified_at=datetime.now(timezone.utc)() if is_verified else None
         )
         db.session.add(item)
         db.session.commit()
@@ -548,8 +679,17 @@ def new_intercooler():
 def edit_intercooler(id):
     item = Intercooler.query.get_or_404(id)
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item.name = request.form['name']
         item.type = request.form.get('type', '')
+        item.source = source
+        if is_verified:
+            item.verified_by = current_user.id
+            item.verified_at = datetime.now(timezone.utc)()
+        else:
+            item.verified_by = None
+            item.verified_at = None
         db.session.commit()
         flash('Интеркулер обновлён', 'success')
         return redirect(url_for('admin.list_intercoolers'))
@@ -575,9 +715,14 @@ def list_exhausts():
 @admin_required
 def new_exhaust():
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item = Exhaust(
             name=request.form['name'],
-            material=request.form.get('material', '')
+            material=request.form.get('material', ''),
+            source=source,
+            verified_by=current_user.id if is_verified else None,
+            verified_at=datetime.now(timezone.utc)() if is_verified else None
         )
         db.session.add(item)
         db.session.commit()
@@ -590,8 +735,17 @@ def new_exhaust():
 def edit_exhaust(id):
     item = Exhaust.query.get_or_404(id)
     if request.method == 'POST':
+        source = request.form.get('source', 'manual')
+        is_verified = request.form.get('is_verified') == 'on'
         item.name = request.form['name']
         item.material = request.form.get('material', '')
+        item.source = source
+        if is_verified:
+            item.verified_by = current_user.id
+            item.verified_at = datetime.now(timezone.utc)()
+        else:
+            item.verified_by = None
+            item.verified_at = None
         db.session.commit()
         flash('Выхлоп обновлён', 'success')
         return redirect(url_for('admin.list_exhausts'))
@@ -958,7 +1112,7 @@ def set_knowledge_status(id):
         item.status = new_status
         if new_status == 'VERIFIED':
             item.verified_by = current_user.id
-            item.verified_at = datetime.utcnow()
+            item.verified_at = datetime.now(timezone.utc)()
         db.session.commit()
         flash('Статус обновлён.', 'success')
     return redirect(url_for('admin.list_knowledge_items'))
@@ -976,8 +1130,27 @@ def delete_knowledge_item(id):
 @admin_bp.route('/swaps')
 @admin_required
 def list_swaps():
+    from services.builder import COMPONENT_MODELS
     swaps = Swap.query.order_by(Swap.created_at.desc()).all()
-    return render_template('admin/list_swaps.html', swaps=swaps)
+
+    # Собираем названия компонентов
+    enriched = []
+    for s in swaps:
+        src_model = COMPONENT_MODELS.get(s.source_component_type)
+        tgt_model = COMPONENT_MODELS.get(s.target_component_type)
+        src_name = '?'
+        tgt_name = '?'
+        if src_model:
+            obj = src_model.query.get(s.source_component_id)
+            if obj:
+                src_name = obj.name
+        if tgt_model:
+            obj = tgt_model.query.get(s.target_component_id)
+            if obj:
+                tgt_name = obj.name
+        enriched.append({'swap': s, 'src_name': src_name, 'tgt_name': tgt_name})
+
+    return render_template('admin/list_swaps.html', swaps=swaps, enriched=enriched)
 
 @admin_bp.route('/swaps/<int:id>/set-status', methods=['POST'])
 @admin_required
@@ -988,7 +1161,7 @@ def set_swap_status(id):
         swap.status = new_status
         if new_status == 'VERIFIED':
             swap.verified_by = current_user.id
-            swap.verified_at = datetime.utcnow()
+            swap.verified_at = datetime.now(timezone.utc)()
         db.session.commit()
         flash('Статус свапа обновлён.', 'success')
     return redirect(url_for('admin.list_swaps'))
@@ -1001,6 +1174,266 @@ def delete_swap(id):
     db.session.commit()
     flash('Свап удалён.', 'info')
     return redirect(url_for('admin.list_swaps'))
+
+# ---------- CONNECTIONS ----------
+@admin_bp.route('/connections')
+@admin_required
+def list_connections():
+    from models import Connection, Model, Brand
+    items = Connection.query.order_by(Connection.vehicle_model_id, Connection.connection_type).all()
+    # Обогащаем названиями моделей
+    enriched = []
+    for c in items:
+        m = Model.query.get(c.vehicle_model_id)
+        b = Brand.query.get(m.brand_id) if m else None
+        enriched.append({
+            'conn': c,
+            'vehicle_name': f"{b.name} {m.name} {m.generation}" if (b and m) else f"model_id={c.vehicle_model_id}"
+        })
+    return render_template('admin/list_connections.html', enriched=enriched)
+
+
+@admin_bp.route('/connections/new', methods=['GET', 'POST'])
+@admin_required
+def new_connection():
+    from models import Connection, Model
+    models_list = Model.query.order_by(Model.name).all()
+
+    if request.method == 'POST':
+        item = Connection(
+            vehicle_model_id=request.form.get('vehicle_model_id', type=int),
+            source_part_id=request.form.get('source_part_id', '').strip(),
+            target_part_id=request.form.get('target_part_id', '').strip(),
+            connection_type=request.form.get('connection_type', 'mechanical'),
+            label=request.form.get('label', ''),
+            description=request.form.get('description', ''),
+            pinout_json=request.form.get('pinout_json', ''),
+            notes=request.form.get('notes', ''),
+            source='manual',
+            verified_by=current_user.id,
+            verified_at=datetime.now(timezone.utc)(),
+            created_at=datetime.now(timezone.utc)(),
+            updated_at=datetime.now(timezone.utc)()
+        )
+        db.session.add(item)
+        db.session.commit()
+        flash('Связь добавлена', 'success')
+        return redirect(url_for('admin.list_connections'))
+
+    return render_template('admin/edit_connection.html', item=None, models_list=models_list)
+
+
+@admin_bp.route('/connections/<int:id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_connection(id):
+    from models import Connection, Model
+    item = Connection.query.get_or_404(id)
+    models_list = Model.query.order_by(Model.name).all()
+
+    if request.method == 'POST':
+        item.vehicle_model_id = request.form.get('vehicle_model_id', type=int)
+        item.source_part_id = request.form.get('source_part_id', '').strip()
+        item.target_part_id = request.form.get('target_part_id', '').strip()
+        item.connection_type = request.form.get('connection_type', 'mechanical')
+        item.label = request.form.get('label', '')
+        item.description = request.form.get('description', '')
+        item.pinout_json = request.form.get('pinout_json', '')
+        item.notes = request.form.get('notes', '')
+        item.updated_at = datetime.now(timezone.utc)()
+        db.session.commit()
+        flash('Связь обновлена', 'success')
+        return redirect(url_for('admin.list_connections'))
+
+    return render_template('admin/edit_connection.html', item=item, models_list=models_list)
+
+
+@admin_bp.route('/connections/<int:id>/delete', methods=['POST'])
+@admin_required
+def delete_connection(id):
+    from models import Connection
+    item = Connection.query.get_or_404(id)
+    db.session.delete(item)
+    db.session.commit()
+    flash('Связь удалена', 'info')
+    return redirect(url_for('admin.list_connections'))
+
+@admin_bp.route('/swaps/new', methods=['GET', 'POST'])
+@admin_required
+def new_swap():
+    from services.builder import COMPONENT_MODELS
+    import json
+
+    component_types = list(COMPONENT_MODELS.keys())
+
+    if request.method == 'POST':
+        comp_type = request.form.get('component_type', 'engine')
+        source_id = request.form.get('source_component_id', type=int)
+        target_id = request.form.get('target_component_id', type=int)
+
+        if not source_id or not target_id:
+            flash('Выберите исходный и целевой компонент', 'danger')
+            return redirect(url_for('admin.new_swap'))
+
+        if source_id == target_id:
+            flash('Исходный и целевой компонент не могут совпадать', 'warning')
+            return redirect(url_for('admin.new_swap'))
+
+        mods_text = request.form.get('required_modifications', '')
+        parts_text = request.form.get('required_parts', '')
+        mods_list = [m.strip() for m in mods_text.split('\n') if m.strip()]
+        parts_list = [p.strip() for p in parts_text.split('\n') if p.strip()]
+
+        item = Swap(
+            source_vehicle_model_id=request.form.get('source_vehicle_model_id', type=int),
+            source_component_type=comp_type,
+            source_component_id=source_id,
+            target_component_type=comp_type,
+            target_component_id=target_id,
+            transmission_id=None,
+            difficulty=request.form.get('difficulty', type=int) or 1,
+            required_modifications=json.dumps(mods_list, ensure_ascii=False),
+            required_parts=json.dumps(parts_list, ensure_ascii=False),
+            notes=request.form.get('notes', ''),
+            status=request.form.get('status', 'REVIEW_REQUIRED'),
+            source='manual',
+            confidence=0.8,
+            risk_level=request.form.get('risk_level', 'MEDIUM'),
+            verified_by=current_user.id if request.form.get('status') == 'VERIFIED' else None,
+            verified_at=datetime.now(timezone.utc)() if request.form.get('status') == 'VERIFIED' else None,
+            created_at=datetime.now(timezone.utc)(),
+            updated_at=datetime.now(timezone.utc)()
+        )
+        db.session.add(item)
+        db.session.commit()
+        flash('Свап добавлен', 'success')
+        return redirect(url_for('admin.list_swaps'))
+
+    models_list = Model.query.order_by(Model.name).all()
+    return render_template('admin/edit_swap.html',
+                           item=None,
+                           models_list=models_list,
+                           component_types=component_types,
+                           pre_source_items=[],
+                           pre_target_items=[],
+                           mods_str='',
+                           parts_str='')
+
+
+@admin_bp.route('/swaps/<int:id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_swap(id):
+    from services.builder import COMPONENT_MODELS
+    import json
+
+    item = Swap.query.get_or_404(id)
+    component_types = list(COMPONENT_MODELS.keys())
+    models_list = Model.query.order_by(Model.name).all()
+
+    if request.method == 'POST':
+        comp_type = request.form.get('component_type', item.source_component_type)
+        source_id = request.form.get('source_component_id', type=int)
+        target_id = request.form.get('target_component_id', type=int)
+
+        if not source_id or not target_id:
+            flash('Выберите исходный и целевой компонент', 'danger')
+            return redirect(url_for('admin.edit_swap', id=id))
+
+        mods_text = request.form.get('required_modifications', '')
+        parts_text = request.form.get('required_parts', '')
+        item.source_vehicle_model_id = request.form.get('source_vehicle_model_id', type=int)
+        item.source_component_type = comp_type
+        item.source_component_id = source_id
+        item.target_component_type = comp_type
+        item.target_component_id = target_id
+        item.difficulty = request.form.get('difficulty', type=int) or 1
+        item.required_modifications = json.dumps(
+            [m.strip() for m in mods_text.split('\n') if m.strip()], ensure_ascii=False)
+        item.required_parts = json.dumps(
+            [p.strip() for p in parts_text.split('\n') if p.strip()], ensure_ascii=False)
+        item.notes = request.form.get('notes', '')
+        item.status = request.form.get('status', 'REVIEW_REQUIRED')
+        item.risk_level = request.form.get('risk_level', 'MEDIUM')
+        if item.status == 'VERIFIED':
+            item.verified_by = current_user.id
+            item.verified_at = datetime.now(timezone.utc)()
+        else:
+            item.verified_by = None
+            item.verified_at = None
+        item.updated_at = datetime.now(timezone.utc)()
+        db.session.commit()
+        flash('Свап обновлён', 'success')
+        return redirect(url_for('admin.list_swaps'))
+
+    # Подготовка данных для формы (JSON → строки, списки компонентов)
+    mods_str = ''
+    parts_str = ''
+    if item.required_modifications:
+        try:
+            mods_str = '\n'.join(json.loads(item.required_modifications))
+        except Exception:
+            pass
+    if item.required_parts:
+        try:
+            parts_str = '\n'.join(json.loads(item.required_parts))
+        except Exception:
+            pass
+
+    # Списки компонентов для текущего типа
+    model_class = COMPONENT_MODELS.get(item.source_component_type)
+    pre_items = []
+    if model_class:
+        for c in model_class.query.order_by(model_class.id).all():
+            label = c.name
+            if item.source_component_type == 'engine':
+                label += f" ({c.power_hp} л.с.)" if c.power_hp else ''
+            elif item.source_component_type == 'transmission':
+                label += f" ({c.type}, {c.gears}ст)" if c.type else ''
+            elif item.source_component_type == 'differential':
+                label += f" (ratio={c.ratio})" if c.ratio else ''
+            elif item.source_component_type == 'brakes':
+                label += f" ({c.size})" if c.size else ''
+            elif item.source_component_type == 'turbo':
+                label += f" ({c.pressure})" if c.pressure else ''
+            pre_items.append({'id': c.id, 'label': label})
+
+    return render_template('admin/edit_swap.html',
+                           item=item,
+                           models_list=models_list,
+                           component_types=component_types,
+                           pre_source_items=pre_items,
+                           pre_target_items=pre_items,
+                           mods_str=mods_str,
+                           parts_str=parts_str)
+
+@admin_bp.route('/api/components/<component_type>')
+@admin_required
+def api_components_by_type(component_type):
+    """Возвращает JSON-список компонентов указанного типа для формы свапа."""
+    from services.builder import COMPONENT_MODELS
+    from flask import jsonify
+
+    model_class = COMPONENT_MODELS.get(component_type)
+    if not model_class:
+        return jsonify({'error': 'unknown type'}), 404
+
+    items = model_class.query.order_by(model_class.id).all()
+    result = []
+    for item in items:
+        # Универсальное описание — берём name + специфичное поле
+        label = item.name
+        if component_type == 'engine':
+            label += f" ({item.power_hp} л.с.)" if item.power_hp else ''
+        elif component_type == 'transmission':
+            label += f" ({item.type}, {item.gears}ст)" if item.type else ''
+        elif component_type == 'differential':
+            label += f" (ratio={item.ratio})" if item.ratio else ''
+        elif component_type == 'brakes':
+            label += f" ({item.size})" if item.size else ''
+        elif component_type == 'turbo':
+            label += f" ({item.pressure})" if item.pressure else ''
+        result.append({'id': item.id, 'label': label})
+
+    return jsonify(result)
 
 @admin_bp.route('/knowledge-items/<int:id>/approve', methods=['POST'])
 @admin_required
@@ -1033,7 +1466,98 @@ def approve_knowledge_item(id):
 
     item.status = 'VERIFIED'
     item.verified_by = current_user.id
-    item.verified_at = datetime.utcnow()
+    item.verified_at = datetime.now(timezone.utc)()
     db.session.commit()
     flash('Бренд и модели созданы, знание подтверждено.', 'success')
     return redirect(url_for('admin.list_knowledge_items'))
+
+# ---------- AI INFRASTRUCTURE MONITORING ----------
+@admin_bp.route('/coverage')
+@admin_required
+def coverage_dashboard():
+    from models import CatalogCoverage, Brand, Model
+    from services.generation_service import calculate_model_coverage
+
+    # Все бренды + их модели
+    brands = Brand.query.order_by(Brand.name).all()
+    rows = []
+    for b in brands:
+        models = Model.query.filter_by(brand_id=b.id).all()
+        for m in models:
+            cov = calculate_model_coverage(m.id)
+            rows.append({
+                'brand': b.name,
+                'model': f"{m.name} {m.generation or ''}".strip(),
+                'model_id': m.id,
+                'level': cov['level'],
+                'details': cov['details'],
+            })
+
+    return render_template('admin/coverage.html', rows=rows)
+
+
+@admin_bp.route('/jobs')
+@admin_required
+def jobs_list():
+    from models import GenerationJob
+    jobs = GenerationJob.query.order_by(GenerationJob.created_at.desc()).limit(100).all()
+    return render_template('admin/jobs.html', jobs=jobs)
+
+
+@admin_bp.route('/jobs/new', methods=['POST'])
+@admin_required
+def jobs_new():
+    from flask import current_app
+    from services.job_runner import enqueue_job
+    job_type = request.form.get('job_type', '').strip()
+    params_json = request.form.get('params_json', '').strip()
+
+    params = None
+    if params_json:
+        try:
+            import json as _json
+            params = _json.loads(params_json)
+        except Exception as e:
+            flash(f'Ошибка в JSON params: {e}', 'danger')
+            return redirect(url_for('admin.jobs_list'))
+
+    if not job_type:
+        flash('Укажите job_type', 'danger')
+        return redirect(url_for('admin.jobs_list'))
+
+    job_id = enqueue_job(current_app._get_current_object(), job_type, params)
+    flash(f'Задача #{job_id} создана', 'success')
+    return redirect(url_for('admin.jobs_list'))
+
+
+@admin_bp.route('/jobs/<int:id>')
+@admin_required
+def job_detail(id):
+    from models import GenerationJob
+    job = GenerationJob.query.get_or_404(id)
+    return render_template('admin/job_detail.html', job=job)
+
+
+@admin_bp.route('/sources')
+@admin_required
+def sources_list():
+    from models import Source
+    sources = Source.query.order_by(Source.created_at.desc()).all()
+    return render_template('admin/sources.html', sources=sources)
+
+
+@admin_bp.route('/sources/new', methods=['POST'])
+@admin_required
+def sources_new():
+    from models import Source
+    src = Source(
+        source_type=request.form.get('source_type', 'real_project'),
+        url=request.form.get('url', ''),
+        title=request.form.get('title', ''),
+        description=request.form.get('description', ''),
+        reliability=request.form.get('reliability', 'medium'),
+    )
+    db.session.add(src)
+    db.session.commit()
+    flash('Источник добавлен', 'success')
+    return redirect(url_for('admin.sources_list'))

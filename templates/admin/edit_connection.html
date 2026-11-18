@@ -1,0 +1,69 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_content %}
+<h2 class="text-light mb-3">{% if item %}Редактировать{% else %}Добавить{% endif %} связь</h2>
+<form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="mb-3">
+        <label class="form-label text-light">Автомобиль</label>
+        <select name="vehicle_model_id" class="form-select bg-dark text-light border-secondary" required>
+            <option value="">-- Выберите --</option>
+            {% for m in models_list %}
+                <option value="{{ m.id }}" {% if item and item.vehicle_model_id == m.id %}selected{% endif %}>
+                    {{ m.brand.name }} {{ m.name }} {{ m.generation }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label text-light">Источник (source_part_id)</label>
+            <input type="text" name="source_part_id" class="form-control bg-dark text-light border-secondary"
+                   value="{{ item.source_part_id if item else '' }}" 
+                   placeholder="engine, transmission, ecu, cooling..." required>
+            <small class="text-muted">ID зоны на схеме</small>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label text-light">Цель (target_part_id)</label>
+            <input type="text" name="target_part_id" class="form-control bg-dark text-light border-secondary"
+                   value="{{ item.target_part_id if item else '' }}" 
+                   placeholder="transmission, differential, susp_rl..." required>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label text-light">Тип связи</label>
+        <select name="connection_type" class="form-select bg-dark text-light border-secondary" required>
+            {% for t in ['mechanical', 'electrical', 'hydraulic', 'fuel', 'cooling', 'air', 'exhaust', 'control'] %}
+                <option value="{{ t }}" {% if item and item.connection_type == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label text-light">Метка (короткое название)</label>
+        <input type="text" name="label" class="form-control bg-dark text-light border-secondary"
+               value="{{ item.label if item else '' }}" placeholder="Сцепление, Кардан, Проводка...">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label text-light">Описание</label>
+        <textarea name="description" class="form-control bg-dark text-light border-secondary" rows="3">{{ item.description if item else '' }}</textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label text-light">Распиновка (JSON, для будущего)</label>
+        <textarea name="pinout_json" class="form-control bg-dark text-light border-secondary" rows="4"
+                  placeholder='{"pin1": "ECU.12", "pin2": "Engine.5"}'>{{ item.pinout_json if item else '' }}</textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label text-light">Заметки</label>
+        <textarea name="notes" class="form-control bg-dark text-light border-secondary" rows="2">{{ item.notes if item else '' }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-glow">Сохранить</button>
+    <a href="{{ url_for('admin.list_connections') }}" class="btn btn-outline-light">Отмена</a>
+</form>
+{% endblock %}
