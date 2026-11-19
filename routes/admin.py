@@ -7,6 +7,7 @@ from functools import wraps
 from datetime import datetime, timezone
 from models import KnowledgeItem, Swap
 import json
+from extensions import db
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -1141,13 +1142,13 @@ def list_swaps():
         src_name = '?'
         tgt_name = '?'
         if src_model:
-            obj = src_model.query.get(s.source_component_id)
-            if obj:
-                src_name = obj.name
+           obj = db.session.get(src_model, s.source_component_id)
+           if obj:
+               src_name = obj.name
         if tgt_model:
-            obj = tgt_model.query.get(s.target_component_id)
-            if obj:
-                tgt_name = obj.name
+           obj = db.session.get(tgt_model, s.target_component_id)
+           if obj:
+               tgt_name = obj.name
         enriched.append({'swap': s, 'src_name': src_name, 'tgt_name': tgt_name})
 
     return render_template('admin/list_swaps.html', swaps=swaps, enriched=enriched)
@@ -1184,8 +1185,8 @@ def list_connections():
     # Обогащаем названиями моделей
     enriched = []
     for c in items:
-        m = Model.query.get(c.vehicle_model_id)
-        b = Brand.query.get(m.brand_id) if m else None
+        m = db.session.get(Model, c.vehicle_model_id)
+        b = db.session.get(Brand, m.brand_id) if m else None
         enriched.append({
             'conn': c,
             'vehicle_name': f"{b.name} {m.name} {m.generation}" if (b and m) else f"model_id={c.vehicle_model_id}"

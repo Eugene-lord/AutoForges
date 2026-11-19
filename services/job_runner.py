@@ -32,7 +32,7 @@ def _run_job(app, job_id: int):
     from services import generation_service
 
     with app.app_context():
-        job = GenerationJob.query.get(job_id)
+        job = db.session.get(GenerationJob, job_id)
         if not job:
             return
 
@@ -52,7 +52,7 @@ def _run_job(app, job_id: int):
 
         except Exception as e:
             db.session.rollback()
-            job = GenerationJob.query.get(job_id)
+            job = db.session.get(GenerationJob, job_id)
             if job:
                 job.status = 'failed'
                 job.error = f"{e}\n{traceback.format_exc()}"

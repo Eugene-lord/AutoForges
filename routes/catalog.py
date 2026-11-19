@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, url_for, redirect, flash
 from models import Brand
 catalog_bp = Blueprint('catalog', __name__)
 import json
+from extensions import db
 
 @catalog_bp.route('/catalog')
 def brand_list():
@@ -67,7 +68,7 @@ def model_detail(model_id):
             continue
         items = []
         for c in grouped[type_key]:
-            obj = cls.query.get(c.component_id)
+            obj = db.session.get(cls, c.component_id)
             if not obj:
                 continue
             items.append({
@@ -94,8 +95,8 @@ def model_detail(model_id):
     ).all()
     swaps = []
     for s in raw_swaps:
-        src = Engine.query.get(s.source_component_id)
-        tgt = Engine.query.get(s.target_component_id)
+        src = db.session.get(Engine, s.source_component_id)
+        tgt = db.session.get(Engine, s.target_component_id)
         swaps.append({
             'swap': s,
             'source_engine': src.name if src else '?',

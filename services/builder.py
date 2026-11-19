@@ -31,7 +31,7 @@ def init_builder():
         session[BUILDER_SESSION_KEY] = {}
 
 def set_vehicle(model_id):
-    model = Model.query.get(model_id)
+    model = db.session.get(Model, model_id)
     if not model:
         return None
     session[BUILDER_SESSION_KEY]['vehicle'] = {
@@ -55,7 +55,7 @@ def get_compatible_components(vehicle_model_id, component_type):
     if not model_class:
         return result
     for comp in comp_rows:
-        item = model_class.query.get(comp.component_id)
+        item = db.session.get(model_class, comp.component_id)
         if item:
             result.append({
                 'item': item,
@@ -71,7 +71,7 @@ def set_component(component_type, item_id):
     model_class = COMPONENT_MODELS.get(component_type)
     if not model_class:
         return None
-    item = model_class.query.get(item_id)
+    item = db.session.get(model_class, item_id)
     if not item:
         return None
     data = {'id': item.id, 'name': item.name}
